@@ -1,0 +1,14 @@
+﻿{
+  "theme": "light",
+  "position": {
+    "x": 100,
+    "y": 100 
+  },
+  "refresh-interval-seconds": 300,
+  "google-calendar": {
+    "ignored-ids": [
+      "d52f758b89f0b869c6ce88ebb74ee9445e05c57d3f1a7f8d3ec007da2358b657@group.calendar.google.com",
+      "tuppslu7fl1gbkcgsuohodopfle7euv4@import.calendar.google.com"
+    ]
+  }
+}

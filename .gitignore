@@ -1,0 +1,8 @@
+bin/
+obj/
+.vs/
+/packages/
+riderModule.iml
+/_ReSharper.Caches/
+/todoist_credentials.json
+/gcal_credentials.json
