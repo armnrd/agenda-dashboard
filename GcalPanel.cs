@@ -1,6 +1,4 @@
-﻿namespace AgendaDashboard;
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -8,7 +6,9 @@ using System.Windows.Controls;
 using System.Collections.ObjectModel;
 using System.Windows.Media;
 
-public class DayViewEventPanel : Panel
+namespace AgendaDashboard;
+
+public class GcalPanel : Panel
 {
     private readonly TimeSpan _dayStart = TimeSpan.FromHours(0); // Start of the day
     private readonly TimeSpan _dayEnd = TimeSpan.FromHours(24); // End of the day

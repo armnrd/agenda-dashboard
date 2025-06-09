@@ -1,19 +1,18 @@
-﻿namespace AgendaDashboard;
-
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
-using System.Windows;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using Microsoft.Extensions.Configuration;
 using System.Windows.Media;
-using System.Windows.Controls;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Calendar.v3;
 using Google.Apis.Calendar.v3.Data;
 using Google.Apis.Services;
 using Google.Apis.Util.Store;
-using System.IO;
-using System.Threading;
-using System.Linq;
-using Microsoft.Extensions.Configuration;
+
+namespace AgendaDashboard;
 
 public class CalendarEvent
 {
@@ -24,9 +23,9 @@ public class CalendarEvent
     public System.Windows.Media.Brush CalendarColor { get; set; }
 }
 
-public class DayViewModel
+public class GcalViewModel
 {
-    public ObservableCollection<CalendarEvent> Events { get; set; } = new ObservableCollection<CalendarEvent>();
+    public ObservableCollection<CalendarEvent> GcalEvents { get; set; } = new();
 
     public async Task LoadGoogleCalendarEventsAsync()
     {
@@ -36,13 +35,12 @@ public class DayViewModel
 
         using (var stream = new FileStream("gcal_credentials.json", FileMode.Open, FileAccess.Read))
         {
-            string credPath = "gcal_token";
             credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
                 GoogleClientSecrets.FromStream(stream).Secrets,
                 Scopes,
                 "user",
                 CancellationToken.None,
-                new FileDataStore(credPath, true));
+                new FileDataStore("gcal_token", true));
         }
 
         var service = new CalendarService(new BaseClientService.Initializer()
@@ -54,8 +52,6 @@ public class DayViewModel
         var calendarList = await service.CalendarList.List().ExecuteAsync();
         foreach (var calendar in calendarList.Items)
         {
-            Console.WriteLine($"Name: {calendar.Summary}, ID: {calendar.Id}");
-            
             var config = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("settings.json", optional: false, reloadOnChange: true)
@@ -72,7 +68,7 @@ public class DayViewModel
             var brush = new SolidColorBrush(color);
 
             // Define parameters of request.
-            EventsResource.ListRequest request = service.Events.List(calendar.Id);
+            var request = service.Events.List(calendar.Id);
             request.TimeMin = DateTime.Now.Date;
             request.TimeMax = DateTime.Now.Date.AddDays(1);
             request.ShowDeleted = false;
@@ -80,11 +76,11 @@ public class DayViewModel
             request.OrderBy = EventsResource.ListRequest.OrderByEnum.StartTime;
 
             // List events.
-            Events events = await request.ExecuteAsync();
+            var events = await request.ExecuteAsync();
 
             foreach (var ev in events.Items.Where(e => e.Start.DateTime.HasValue && e.End.DateTime.HasValue))
             {
-                Events.Add(new CalendarEvent
+                GcalEvents.Add(new CalendarEvent
                 {
                     Title = ev.Summary,
                     Start = ev.Start.DateTime.Value,

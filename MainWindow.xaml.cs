@@ -16,23 +16,17 @@ using Microsoft.Extensions.Configuration;
 
 namespace AgendaDashboard;
 
-public class AgendaItem
-{
-    public string Time { get; set; }
-    public string Title { get; set; }
-}
-
 /// <summary>
 /// Interaction logic for MainWindow.xaml
 /// </summary>
 public partial class MainWindow : Window
 {
-    private DayViewModel _dayViewModel = new DayViewModel();
-
+    public GcalViewModel GcalViewModel { get; } = new GcalViewModel();
+    public TodoistViewModel TodoistViewModel { get; }= new TodoistViewModel();
+    
     public MainWindow()
     {
         InitializeComponent();
-        DataContext = _dayViewModel;
         Loaded += MainWindow_Loaded; // Subscribe to the Loaded event to load events when the window is ready
     }
 
@@ -46,7 +40,6 @@ public partial class MainWindow : Window
         var x = config.GetSection("position").GetValue<int>("x");
         var y = config.GetSection("position").GetValue<int>("y");
         
-        await _dayViewModel.LoadGoogleCalendarEventsAsync();
         var hwnd = new WindowInteropHelper(this).Handle;
 
         SetWindowPos(hwnd, HWND_BOTTOM, x, y, 0, 0,

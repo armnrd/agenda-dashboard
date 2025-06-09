@@ -28,6 +28,7 @@
       <Content Include="settings.json">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
+      <None Remove="response.json" />
     </ItemGroup>
 
 </Project>
