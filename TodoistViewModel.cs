@@ -1,18 +1,13 @@
-﻿using System.IO;
-using Google.Apis.Auth.OAuth2;
-using Google.Apis.Util.Store;
+﻿using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.IO;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 
 namespace AgendaDashboard;
 
-using System;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text.Json;
-using System.Threading.Tasks;
 
 public class TaskItem
 {

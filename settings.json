@@ -1,8 +1,8 @@
 ﻿{
   "theme": "light",
   "position": {
-    "x": 100,
-    "y": 100 
+    "x": 20,
+    "y": 20 
   },
   "refresh-interval-seconds": 300,
   "google-calendar": {

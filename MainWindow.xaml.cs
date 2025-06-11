@@ -37,23 +37,27 @@ public partial class MainWindow : Window
             .AddJsonFile("settings.json", optional: false, reloadOnChange: true)
             .Build();
         
-        var x = config.GetSection("position").GetValue<int>("x");
-        var y = config.GetSection("position").GetValue<int>("y");
+        this.Left = config.GetSection("position").GetValue<int>("x");
+        this.Top = config.GetSection("position").GetValue<int>("y");
         
-        var hwnd = new WindowInteropHelper(this).Handle;
-
-        SetWindowPos(hwnd, HWND_BOTTOM, x, y, 0, 0,
-            SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_SHOWWINDOW);
+        // var hwnd = new WindowInteropHelper(this).Handle;
+        // int exStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
+        // exStyle |= WS_EX_TOOLWINDOW;
+        // SetWindowLong(hwnd, GWL_EXSTYLE, exStyle);
     }
 
-    private const int SWP_NOMOVE = 0x0002;
-    private const int SWP_NOSIZE = 0x0001;
-    private const int SWP_NOACTIVATE = 0x0010;
-    private const int SWP_SHOWWINDOW = 0x0040;
-    private static readonly IntPtr HWND_BOTTOM = new IntPtr(1);
+    // const int GWL_EXSTYLE = -20;
+    // const int WS_EX_TOOLWINDOW = 0x00000080;
 
+    [DllImport("user32.dll")]
+    static extern int GetWindowLong(IntPtr hWnd, int nIndex);
+
+    [DllImport("user32.dll")]
+    static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
+    
     [DllImport("user32.dll")]
     private static extern bool SetWindowPos(
         IntPtr hWnd, IntPtr hWndInsertAfter,
         int X, int Y, int cx, int cy, uint uFlags);
+    
 }

@@ -17,5 +17,6 @@ public partial class GcalView : UserControl
         // Load events when the user control is loaded
         var viewModel = (GcalViewModel)DataContext;
         viewModel.LoadGoogleCalendarEventsAsync().ConfigureAwait(false);
+        ScrollViewer.ScrollToVerticalOffset(400);
     }
 }
