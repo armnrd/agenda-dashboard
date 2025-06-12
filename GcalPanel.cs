@@ -65,13 +65,13 @@ public class GcalPanel : Panel
 
         var events = Children
             .OfType<FrameworkElement>()
-            .Select(e => e.DataContext as CalendarEvent)
+            .Select(e => e.DataContext as GcalEvent)
             .Where(e => e != null)
             .OrderBy(e => e.Start)
             .ToList();
 
         // Assign columns for overlapping events
-        var columns = new Dictionary<CalendarEvent, int>();
+        var columns = new Dictionary<GcalEvent, int>();
         var columnEnds = new List<DateTime>();
         foreach (var ev in events)
         {

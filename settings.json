@@ -4,11 +4,16 @@
     "x": 20,
     "y": 20 
   },
-  "refresh-interval-seconds": 300,
+  "todoist": {
+    "refresh-interval": 60
+  },
   "google-calendar": {
+    "refresh-interval": 300,
     "ignored-ids": [
       "d52f758b89f0b869c6ce88ebb74ee9445e05c57d3f1a7f8d3ec007da2358b657@group.calendar.google.com",
-      "tuppslu7fl1gbkcgsuohodopfle7euv4@import.calendar.google.com"
+      "tuppslu7fl1gbkcgsuohodopfle7euv4@import.calendar.google.com",
+      "e1a50b44194dba873501f8cee3af8cbd3bfdc1d40cbb485d4c303a535a7b1c1a@group.calendar.google.com",
+      "226c6733d7da8b3f4dfd22ff839d9d9d4a59d209c793821e27653b7de5ae6b13@group.calendar.google.com"
     ]
   }
 }
