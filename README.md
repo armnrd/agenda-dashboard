@@ -9,7 +9,7 @@ A lightweight desktop widget that displays your daily schedule and tasks directl
 
 ## Screenshots
 
-*[Add screenshots of your widget in action]*
+![Agenda Dashboard Screenshot](screenshot.png)
 
 ## Requirements
 
