@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
+using System.Windows;
 using Microsoft.Extensions.Configuration;
 using System.Windows.Media;
 using Google.Apis.Auth.OAuth2;
@@ -14,7 +17,7 @@ using Google.Apis.Util.Store;
 
 namespace AgendaDashboard;
 
-public class CalendarEvent
+public class GcalEvent
 {
     public string Title { get; set; }
     public DateTime Start { get; set; }
@@ -23,11 +26,36 @@ public class CalendarEvent
     public System.Windows.Media.Brush CalendarColor { get; set; }
 }
 
-public class GcalViewModel
+public class GcalViewModel : INotifyPropertyChanged
 {
-    public ObservableCollection<CalendarEvent> GcalEvents { get; set; } = new();
+    private List<string> _ignoredIds;
+    private Timer _timer;
 
-    public async Task LoadGoogleCalendarEventsAsync()
+    public ObservableCollection<GcalEvent> GcalEvents { get; set; } = new();
+
+    public GcalViewModel()
+    {
+        // Load settings from settings.json
+        var settings = JsonDocument.Parse(File.ReadAllText("settings.json"));
+
+        // Get the list of ignored calendar IDs
+        var ignoredIdsElement = settings.RootElement
+            .GetProperty("google-calendar")
+            .GetProperty("ignored-ids");
+        _ignoredIds = ignoredIdsElement.EnumerateArray()
+            .Select(e => e.GetString())
+            .ToList();
+
+        // Get the refresh interval
+        var refreshInterval = settings.RootElement
+            .GetProperty("google-calendar")
+            .GetProperty("refresh-interval").GetInt32();
+
+        // Set up a timer to refresh the events model TODO: fix this
+        // _timer = new Timer(async _ => await LoadGcalEventsAsync(), null, 0, refreshInterval * 1000);
+    }
+
+    public async Task LoadGcalEventsAsync()
     {
         string[] Scopes = { CalendarService.Scope.CalendarReadonly };
         string ApplicationName = "AgendaDashboard";
@@ -50,17 +78,11 @@ public class GcalViewModel
         });
 
         var calendarList = await service.CalendarList.List().ExecuteAsync();
+        var gcalEventsNew = new List<GcalEvent>();
         foreach (var calendar in calendarList.Items)
         {
-            var config = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("settings.json", optional: false, reloadOnChange: true)
-                .Build();
-            
-            var ignoredIds = config.GetSection("google-calendar:ignored-ids").Get<List<string>>();
-            
-            // Skip calendars that are not in the ignored-ids list
-            if (ignoredIds.Contains(calendar.Id))
+            // Skip calendars that are in the ignored-ids list
+            if (_ignoredIds.Contains(calendar.Id))
                 continue;
 
             // Convert calendar hex color to Brush
@@ -80,7 +102,7 @@ public class GcalViewModel
 
             foreach (var ev in events.Items.Where(e => e.Start.DateTime.HasValue && e.End.DateTime.HasValue))
             {
-                GcalEvents.Add(new CalendarEvent
+                gcalEventsNew.Add(new GcalEvent
                 {
                     Title = ev.Summary,
                     Start = ev.Start.DateTime.Value,
@@ -90,5 +112,19 @@ public class GcalViewModel
                 });
             }
         }
+
+        // Update the GcalEvents collection from within the UI thread
+        Application.Current.Dispatcher.Invoke(() =>
+        {
+            GcalEvents.Clear();
+            // Populate GcalEvents with the new tasks
+            foreach (var gcalEvent in gcalEventsNew)
+                GcalEvents.Add(gcalEvent);
+        });
     }
+
+    protected void OnPropertyChanged(string propertyName) =>
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+
+    public event PropertyChangedEventHandler PropertyChanged;
 }
