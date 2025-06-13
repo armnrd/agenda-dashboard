@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Collections.ObjectModel;
 using System.Windows.Media;
+using System.Windows.Threading;
 
 namespace AgendaDashboard;
 
@@ -12,7 +13,19 @@ public class GcalPanel : Panel
 {
     private readonly TimeSpan _dayStart = TimeSpan.FromHours(0); // Start of the day
     private readonly TimeSpan _dayEnd = TimeSpan.FromHours(24); // End of the day
-    
+
+    // Constructor
+    public GcalPanel()
+    {
+        // Update the panel every 10 seconds
+        var timer = new DispatcherTimer
+        {
+            Interval = TimeSpan.FromSeconds(10) // Refresh every 10 seconds
+        };
+        timer.Tick += (s, e) => InvalidateVisual();
+        timer.Start();
+    }
+
     protected override void OnRender(DrawingContext dc)
     {
         base.OnRender(dc);
@@ -28,13 +41,15 @@ public class GcalPanel : Panel
         var typeface = new Typeface("Segoe UI");
         double labelMargin = 4;
 
+        // Draw background
         for (int i = 0; i <= hours; i++)
         {
             TimeSpan current = _dayStart.Add(TimeSpan.FromHours(i));
             double y = (current.TotalMinutes - _dayStart.TotalMinutes) / totalMinutes * height;
 
             // Draw hour line
-            dc.DrawLine(linePen, new Point(40, y), new Point(width - 10, y)); // 40px for left margin and 10px for right margin
+            dc.DrawLine(linePen, new Point(40, y),
+                new Point(width - 10, y)); // 40px for left margin and 10px for right margin
 
             // Draw hour label
             var text = new FormattedText(
@@ -48,8 +63,25 @@ public class GcalPanel : Panel
 
             dc.DrawText(text, new Point(labelMargin, y - text.Height / 2));
         }
+
+        // Draw line for current time
+        TimeSpan now = DateTime.Now.TimeOfDay;
+        if (now >= _dayStart && now <= _dayEnd)
+        {
+            double y = (now.TotalMinutes - _dayStart.TotalMinutes) / totalMinutes * height;
+            dc.DrawLine(new Pen(Brushes.Red, 1), new Point(40, y), new Point(width - 10, y));
+            var nowText = new FormattedText(
+                now.ToString(@"hh\:mm"),
+                System.Globalization.CultureInfo.CurrentCulture,
+                FlowDirection.LeftToRight,
+                typeface,
+                12,
+                Brushes.Red,
+                VisualTreeHelper.GetDpi(this).PixelsPerDip);
+            dc.DrawText(nowText, new Point(labelMargin, y - nowText.Height / 2));
+        }
     }
-    
+
     protected override Size MeasureOverride(Size availableSize)
     {
         foreach (UIElement child in Children)

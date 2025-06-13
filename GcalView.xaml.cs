@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Threading;
 
 namespace AgendaDashboard;
 
@@ -14,8 +15,23 @@ public partial class GcalView : UserControl
 
     private void CalendarView_Loaded(object sender, RoutedEventArgs e)
     {
-        // Scroll to a specific vertical offset after the view is loaded
-        ScrollViewer.ScrollToVerticalOffset(400);
+        // Scroll to the current time on load
+        var currentOffset = (DateTime.Now.TimeOfDay.TotalMinutes / 1440) * ScrollViewer.ScrollableHeight;
+        ScrollViewer.ScrollToVerticalOffset(currentOffset);
+        
+        // Periodically scroll to the current time
+        var timer = new DispatcherTimer
+        {
+            Interval = TimeSpan.FromSeconds(60) // Refresh every minute
+        };
+        timer.Tick += (s, args) =>
+        {
+            var currentOffset = (DateTime.Now.TimeOfDay.TotalMinutes / 1440) * ScrollViewer.ScrollableHeight;
+            ScrollViewer.ScrollToVerticalOffset(currentOffset);
+        };
+        timer.Start();
+        
+        // Load the Google Calendar events asynchronously
         (DataContext as GcalViewModel).LoadGcalEventsAsync().ConfigureAwait(false);
     }
 }
