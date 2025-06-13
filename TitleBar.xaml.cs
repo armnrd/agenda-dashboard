@@ -9,7 +9,7 @@ public partial class TitleBar : UserControl
     public GcalViewModel GcalViewModel { get; set; }
     public TodoistViewModel TodoistViewModel { get; set; }
 
-    private WindowChrome _mainWindowChromeNormal, _mainWindowChromeLocked;
+    private WindowChrome _mainWindowChromeUnlocked, _mainWindowChromeLocked;
 
     public TitleBar()
     {
@@ -19,15 +19,15 @@ public partial class TitleBar : UserControl
 
     private void TitleBar_Loaded(object sender, RoutedEventArgs e)
     {
-        // Define the custom normal window chrome for the main window
-        _mainWindowChromeNormal =
+        // Define the custom unlocked window chrome for the main window
+        _mainWindowChromeUnlocked =
             new WindowChrome
             {
                 CaptionHeight = DockPanel.Height, // Use the height of this title bar as height of the caption area
                 CornerRadius = new CornerRadius(0), // No corner radius
                 GlassFrameThickness = new Thickness(0) // No glass frame thickness
             };
-       
+
         // Define the custom locked window chrome to prevent dragging and resizing
         _mainWindowChromeLocked =
             new WindowChrome
@@ -37,16 +37,22 @@ public partial class TitleBar : UserControl
                 CornerRadius = new CornerRadius(0), // No corner radius
                 GlassFrameThickness = new Thickness(0) // No glass frame thickness
             };
-        
-        // Set the custom normal chrome for the main window
-        WindowChrome.SetWindowChrome(Window.GetWindow(this), _mainWindowChromeNormal);
+
+        // Set the custom locked chrome for the main window by default
+        // Do this by checking the "Lock Window" menu item
+        foreach (var item in MainMenu.Items)
+            if ((item as MenuItem).Header?.ToString() == "Lock Window")
+            {
+                (item as MenuItem).IsChecked = true;
+                break;
+            }
     }
 
-    private void MenuButton_Click(object sender, RoutedEventArgs e)
+    private void MainMenuButton_Click(object sender, RoutedEventArgs e)
     {
-        MenuButton.ContextMenu.PlacementTarget = MenuButton;
-        MenuButton.ContextMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
-        MenuButton.ContextMenu.IsOpen = true;
+        MainMenuButton.ContextMenu.PlacementTarget = MainMenuButton;
+        MainMenuButton.ContextMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
+        MainMenuButton.ContextMenu.IsOpen = true;
     }
 
     private void RefreshMenuItem_Click(object sender, RoutedEventArgs e)
@@ -59,13 +65,13 @@ public partial class TitleBar : UserControl
     private void LockMenuItem_Checked(object sender, RoutedEventArgs e)
     {
         // Prevent dragging and resizing by setting a locked window chrome
-        WindowChrome.SetWindowChrome(Window.GetWindow(this),_mainWindowChromeLocked); 
+        WindowChrome.SetWindowChrome(Window.GetWindow(this), _mainWindowChromeLocked);
     }
 
     private void LockMenuItem_Unchecked(object sender, RoutedEventArgs e)
     {
         // Allow dragging and resizing by restoring the original window chrome
-        WindowChrome.SetWindowChrome(Window.GetWindow(this), _mainWindowChromeNormal);
+        WindowChrome.SetWindowChrome(Window.GetWindow(this), _mainWindowChromeUnlocked);
     }
 
     private void ExitMenuItem_Click(object sender, RoutedEventArgs e)
