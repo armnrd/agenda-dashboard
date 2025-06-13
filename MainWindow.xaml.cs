@@ -13,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Shell;
 using Microsoft.Extensions.Configuration;
 
 namespace AgendaDashboard;
@@ -28,33 +29,38 @@ public partial class MainWindow : Window
         Loaded += MainWindow_Loaded; // Subscribe to the Loaded event to load events when the window is ready
     }
 
-    private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
+    private void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
         // Load settings from settings.json
         var settings = JsonDocument.Parse(File.ReadAllText("settings.json"));
 
         // Get the initial window position
         var positionElement = settings.RootElement.GetProperty("position");
-        this.Left = positionElement.GetProperty("x").GetInt32() - 10; // Adjust for the title bar width
-        this.Top = positionElement.GetProperty("y").GetInt32() - 4; // Adjust for the title bar height
-
+        this.Left = positionElement.GetProperty("x").GetInt32() - 4; // Offset by 4px because of the title bar
+        this.Top = positionElement.GetProperty("y").GetInt32() - 4; // Same here
+       
+        // Connect the view models from GcalView and TodoistView to TitleBar
+        TitleBar.GcalViewModel = GcalView.DataContext as GcalViewModel; 
+        TitleBar.TodoistViewModel = TodoistView.DataContext as TodoistViewModel;
+        
         // var hwnd = new WindowInteropHelper(this).Handle;
         // int exStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
         // exStyle |= WS_EX_TOOLWINDOW;
         // SetWindowLong(hwnd, GWL_EXSTYLE, exStyle);
     }
-
+    
     // const int GWL_EXSTYLE = -20;
     // const int WS_EX_TOOLWINDOW = 0x00000080;
 
     [DllImport("user32.dll")]
-    static extern int GetWindowLong(IntPtr hWnd, int nIndex);
+    private static extern int GetWindowLong(IntPtr hWnd, int nIndex);
 
     [DllImport("user32.dll")]
-    static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
+    private static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
 
     [DllImport("user32.dll")]
     private static extern bool SetWindowPos(
         IntPtr hWnd, IntPtr hWndInsertAfter,
         int X, int Y, int cx, int cy, uint uFlags);
+
 }

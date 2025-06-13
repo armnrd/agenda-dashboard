@@ -16,6 +16,6 @@ public partial class GcalView : UserControl
     {
         // Scroll to a specific vertical offset after the view is loaded
         ScrollViewer.ScrollToVerticalOffset(400);
-        ((GcalViewModel)DataContext).LoadGcalEventsAsync().ConfigureAwait(false);
+        (DataContext as GcalViewModel).LoadGcalEventsAsync().ConfigureAwait(false);
     }
 }
