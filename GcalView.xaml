@@ -14,9 +14,9 @@
                     <Border Background="{Binding CalendarColor}" CornerRadius="4" Margin="2" Padding="4"
                             BorderBrush="Black" BorderThickness="0.5">
                         <StackPanel>
-                            <TextBlock Text="{Binding Title}" FontWeight="Bold" />
-                            <TextBlock Text="{Binding CalendarName}" FontSize="10" Foreground="Gray" />
-                            <TextBlock>
+                            <TextBlock Text="{Binding Title}" FontSize="12" FontWeight="Bold" />
+                            <TextBlock Text="{Binding CalendarName}" FontSize="10" Foreground="DimGray" />
+                            <TextBlock FontSize="10">
                                 <Run Text="{Binding Start, StringFormat={}{0:HH:mm}}" />
                                 <Run Text=" - " />
                                 <Run Text="{Binding End, StringFormat={}{0:HH:mm}}" />

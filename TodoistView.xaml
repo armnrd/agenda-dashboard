@@ -18,10 +18,10 @@
                         <!-- Effect="{DynamicResource {x:Static SystemParameters.DropShadowKey}}"> -->
                         <DockPanel LastChildFill="True"
                                    Width="{Binding ViewportWidth, RelativeSource={RelativeSource AncestorType=ScrollViewer}, Converter={StaticResource TaskWidthAdjust}}">
-                            <CheckBox IsChecked="{Binding IsCompleted}" Margin="0,0,12,0" VerticalAlignment="Center" />
+                            <CheckBox IsChecked="{Binding Checked}" Margin="0,0,12,0" VerticalAlignment="Center" />
                             <TextBlock Text="{Binding Content}"
                                        VerticalAlignment="Center"
-                                       FontSize="14"
+                                       FontSize="12"
                                        Foreground="#222"
                                        TextTrimming="CharacterEllipsis"
                                        DockPanel.Dock="Right">
