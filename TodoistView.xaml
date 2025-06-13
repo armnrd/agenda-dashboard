@@ -2,7 +2,10 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:AgendaDashboard">
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <UserControl.Resources>
+        <local:AddValueConverter x:Key="TaskWidthAdjust" Addend="-52"/>
+    </UserControl.Resources>
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
         <ListBox ItemsSource="{Binding TodoistTasks}" Background="Transparent" BorderThickness="0">
             <ListBox.ItemTemplate>
                 <DataTemplate>
@@ -12,14 +15,17 @@
                             CornerRadius="8"
                             BorderBrush="#DDD"
                             BorderThickness="1">
-                            <!-- Effect="{DynamicResource {x:Static SystemParameters.DropShadowKey}}"> -->
-                        <DockPanel>
-                            <CheckBox IsChecked="{Binding IsCompleted}" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                        <!-- Effect="{DynamicResource {x:Static SystemParameters.DropShadowKey}}"> -->
+                        <DockPanel LastChildFill="True"
+                                   Width="{Binding ViewportWidth, RelativeSource={RelativeSource AncestorType=ScrollViewer}, Converter={StaticResource TaskWidthAdjust}}">
+                            <CheckBox IsChecked="{Binding IsCompleted}" Margin="0,0,12,0" VerticalAlignment="Center" />
                             <TextBlock Text="{Binding Content}"
                                        VerticalAlignment="Center"
                                        FontSize="14"
                                        Foreground="#222"
-                                       TextWrapping="Wrap"/>
+                                       TextTrimming="CharacterEllipsis"
+                                       DockPanel.Dock="Right">
+                            </TextBlock>
                         </DockPanel>
                     </Border>
                 </DataTemplate>
