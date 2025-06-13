@@ -13,7 +13,8 @@ public class TodoistTask
     public string Id { get; set; }
     public string Content { get; set; }
     public DateTime? DueDate { get; set; }
-    public bool IsCompleted { get; set; }
+    public bool Checked { get; set; }
+    public short DayOrder { get; set; }
 }
 
 public class TodoistViewModel : INotifyPropertyChanged
@@ -46,28 +47,29 @@ public class TodoistViewModel : INotifyPropertyChanged
         using var client = new HttpClient();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _apiToken);
 
-        var response = await client.GetAsync("https://api.todoist.com/rest/v2/tasks");
+        var response = await client.GetAsync("https://api.todoist.com/api/v1/tasks/filter?query=today");
         response.EnsureSuccessStatusCode();
 
-        var json = await response.Content.ReadAsStringAsync();
-        var allTasks = JsonSerializer.Deserialize<List<TodoistTaskDto>>(json);
-
-        var today = DateTime.Today;
-
+        var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        // Get an array enumerator for the results element in the JSON response
+        var tasksEnumerator = json.RootElement.GetProperty("results").EnumerateArray();
+        
+        // Create a new list to hold the TodoistTask objects
         var todoistTasksNew = new List<TodoistTask>();
-        foreach (var task in allTasks)
+        foreach (var task in tasksEnumerator)
         {
-            if (task.due?.date == today.ToString("yyyy-MM-dd"))
+            todoistTasksNew.Add(new TodoistTask()
             {
-                todoistTasksNew.Add(new TodoistTask()
-                {
-                    Id = task.id,
-                    Content = task.content,
-                    IsCompleted = task.is_completed,
-                    DueDate = DateTime.Parse(task.due.date)
-                });
-            }
+                Id = task.GetProperty("id").GetString(),
+                Content = task.GetProperty("content").GetString(),
+                Checked = task.GetProperty("checked").GetBoolean(),
+                DueDate = DateTime.Parse(task.GetProperty("due").GetProperty("date").GetString()),
+                DayOrder = task.GetProperty("day_order").GetInt16()
+            });
         }
+        
+        // Sort the tasks by day order
+        todoistTasksNew.Sort((x, y) => x.DayOrder.CompareTo(y.DayOrder));
 
         // Update the TodoistTasks collection from within the UI thread
         Application.Current.Dispatcher.Invoke(() =>
