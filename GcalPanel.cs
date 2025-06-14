@@ -18,10 +18,7 @@ public class GcalPanel : Panel
     public GcalPanel()
     {
         // Update the panel every 10 seconds
-        var timer = new DispatcherTimer
-        {
-            Interval = TimeSpan.FromSeconds(10) // Refresh every 10 seconds
-        };
+        var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(10) }; // Refresh every 10 seconds
         timer.Tick += (s, e) => InvalidateVisual();
         timer.Start();
     }
@@ -82,6 +79,7 @@ public class GcalPanel : Panel
         }
     }
 
+    // Override MeasureOverride and ArrangeOverride to handle child elements
     protected override Size MeasureOverride(Size availableSize)
     {
         foreach (UIElement child in Children)

@@ -5,7 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:AgendaDashboard"
         mc:Ignorable="d"
-        Title="Agenda Dashboard" Width="416" Height="832"
+        Title="Agenda Dashboard"
+        Width="416" Height="832"
         ShowInTaskbar="False"
         WindowStyle="ToolWindow"
         Topmost="False">

@@ -31,6 +31,15 @@ public partial class MainWindow : Window
 
     private void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
+        // Connect the view models from GcalView and TodoistView to TitleBar
+        TitleBar.GcalViewModel = GcalView.DataContext as GcalViewModel;
+        TitleBar.TodoistViewModel = TodoistView.DataContext as TodoistViewModel;
+    }
+
+    protected override void OnSourceInitialized(EventArgs e)
+    {
+        base.OnSourceInitialized(e);
+
         // Load settings from settings.json
         var settings = JsonDocument.Parse(File.ReadAllText("settings.json"));
 
@@ -38,19 +47,7 @@ public partial class MainWindow : Window
         var positionElement = settings.RootElement.GetProperty("position");
         this.Left = positionElement.GetProperty("x").GetInt32() - 4; // Offset by 4px because of the title bar
         this.Top = positionElement.GetProperty("y").GetInt32() - 4; // Same here
-       
-        // Connect the view models from GcalView and TodoistView to TitleBar
-        TitleBar.GcalViewModel = GcalView.DataContext as GcalViewModel; 
-        TitleBar.TodoistViewModel = TodoistView.DataContext as TodoistViewModel;
-        
-        // var hwnd = new WindowInteropHelper(this).Handle;
-        // int exStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
-        // exStyle |= WS_EX_TOOLWINDOW;
-        // SetWindowLong(hwnd, GWL_EXSTYLE, exStyle);
     }
-    
-    // const int GWL_EXSTYLE = -20;
-    // const int WS_EX_TOOLWINDOW = 0x00000080;
 
     [DllImport("user32.dll")]
     private static extern int GetWindowLong(IntPtr hWnd, int nIndex);
@@ -59,8 +56,7 @@ public partial class MainWindow : Window
     private static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
 
     [DllImport("user32.dll")]
-    private static extern bool SetWindowPos(
-        IntPtr hWnd, IntPtr hWndInsertAfter,
-        int X, int Y, int cx, int cy, uint uFlags);
-
+    private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter,
+        int X, int Y, int cx, int cy,
+        uint uFlags);
 }
