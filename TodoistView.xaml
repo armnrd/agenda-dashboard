@@ -5,7 +5,7 @@
     <UserControl.Resources>
         <local:AddValueConverter x:Key="TaskWidthAdjust" Addend="-52"/>
     </UserControl.Resources>
-    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <ScrollViewer VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Disabled">
         <ListBox ItemsSource="{Binding TodoistTasks}" Background="Transparent" BorderThickness="0">
             <ListBox.ItemTemplate>
                 <DataTemplate>
