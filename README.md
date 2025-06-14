@@ -29,7 +29,7 @@ A lightweight desktop widget that displays your daily schedule and tasks directl
 1. Clone the repository:
    ```bash
    git clone https://github.com/armnrd/agenda-dashboard.git
-   cd agenda-aashboard
+   cd agenda-dashboard
    ```
 
 2. Open the solution in Visual Studio 2019 or later.
