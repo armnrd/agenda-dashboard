@@ -9,6 +9,7 @@ using System.Threading;
 using System.Windows;
 using Microsoft.Extensions.Configuration;
 using System.Windows.Media;
+using System.Windows.Threading;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Calendar.v3;
 using Google.Apis.Calendar.v3.Data;
@@ -29,7 +30,6 @@ public class GcalEvent
 public class GcalViewModel : INotifyPropertyChanged
 {
     private List<string> _ignoredIds;
-    private Timer _timer;
 
     public ObservableCollection<GcalEvent> GcalEvents { get; set; } = new();
 
@@ -51,8 +51,13 @@ public class GcalViewModel : INotifyPropertyChanged
             .GetProperty("google-calendar")
             .GetProperty("refresh-interval").GetInt32();
 
-        // Set up a timer to refresh the events model TODO: fix this
-        // _timer = new Timer(async _ => await LoadGcalEventsAsync(), null, 0, refreshInterval * 1000);
+        // Set up a timer to refresh the events model
+        var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(refreshInterval) };
+        timer.Tick += async (s, e) => await LoadGcalEventsAsync();
+        timer.Start();
+
+        // Load events immediately on startup
+        _ = LoadGcalEventsAsync();
     }
 
     public async Task LoadGcalEventsAsync()

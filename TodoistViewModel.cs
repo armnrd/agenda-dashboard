@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Windows;
+using System.Windows.Threading;
 
 namespace AgendaDashboard;
 
@@ -38,8 +39,13 @@ public class TodoistViewModel : INotifyPropertyChanged
             .GetProperty("todoist")
             .GetProperty("refresh-interval").GetInt32();
 
-        // Set up a timer to refresh tasks
-        _timer = new Timer(async _ => await LoadTodoistTasksAsync(), null, 0, refreshInterval * 1000);
+        // Set up a timer to refresh the tasks model
+        var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(refreshInterval) };
+        timer.Tick += async (s, e) => await LoadTodoistTasksAsync();
+        timer.Start();
+
+        // Load tasks immediately on startup
+        _ = LoadTodoistTasksAsync();
     }
 
     public async Task LoadTodoistTasksAsync()
