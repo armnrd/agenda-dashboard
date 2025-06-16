@@ -2,6 +2,9 @@
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Windows;
+using System.Windows.Media;
+using System.Windows.Media.Animation;
+using System.Windows.Threading;
 
 namespace AgendaDashboard;
 
@@ -13,6 +16,20 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        
+        // Add status bar text scrolling animation
+        var animation = new DoubleAnimation
+        {
+            From = 0, // Start just outside the right edge TODO: Adjust this based on your layout
+            To = -200, // Move left past the left edge
+            Duration = TimeSpan.FromSeconds(8),
+            RepeatBehavior = RepeatBehavior.Forever
+        };
+        ScrollingStatusText.Loaded += (s, e) =>
+        {
+            StatusTextTransform.BeginAnimation(TranslateTransform.XProperty, animation);
+        };
+        
         Loaded += MainWindow_Loaded; // Subscribe to the Loaded event to load events when the window is ready
     }
 
@@ -46,4 +63,13 @@ public partial class MainWindow : Window
     private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter,
         int X, int Y, int cx, int cy,
         uint uFlags);
+
+    public void ShowNotification(string message, string? status)
+    {
+        ScrollingStatusText.Text = message;
+        if (!string.IsNullOrEmpty(status))
+        {
+            StatusBarStatus.Content = status;
+        }
+    }
 }
