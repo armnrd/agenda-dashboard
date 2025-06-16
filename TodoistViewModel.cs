@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -41,11 +42,36 @@ public class TodoistViewModel : INotifyPropertyChanged
 
         // Set up a timer to refresh the tasks model
         var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(refreshInterval) };
-        timer.Tick += async (s, e) => await LoadTodoistTasksAsync();
+        timer.Tick += async (s, e) =>
+        {
+            try
+            {
+                await LoadTodoistTasksAsync();
+            }
+            catch (Exception ex)
+            {
+                // Show an error message if loading fails
+                ((MainWindow)Application.Current.MainWindow).ShowNotification($"Error loading Todoist tasks: {ex.Message}", "Error");
+                // Log the exception to Trace
+                System.Diagnostics.Trace.WriteLine(
+                    $"{DateTime.Now:HH:mm:ss} - Error loading Todoist tasks: {ex.Message}");
+            }
+        };
         timer.Start();
 
         // Load tasks immediately on startup
-        _ = LoadTodoistTasksAsync();
+        try
+        {
+            _ = LoadTodoistTasksAsync();
+        }
+        catch (Exception ex)
+        {
+            // Show an error message if loading fails
+            ((MainWindow)Application.Current.MainWindow).ShowNotification($"Error loading Todoist tasks: {ex.Message}", "Error");
+            // Log the exception to Trace
+            System.Diagnostics.Trace.WriteLine(
+                $"{DateTime.Now:HH:mm:ss} - Error loading Todoist tasks: {ex.Message}");
+        }
     }
 
     public async Task LoadTodoistTasksAsync()
@@ -59,7 +85,7 @@ public class TodoistViewModel : INotifyPropertyChanged
         var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
         // Get an array enumerator for the results element in the JSON response
         var tasksEnumerator = json.RootElement.GetProperty("results").EnumerateArray();
-        
+
         // Create a new list to hold the TodoistTask objects
         var todoistTasksNew = new List<TodoistTask>();
         foreach (var task in tasksEnumerator)
@@ -73,7 +99,7 @@ public class TodoistViewModel : INotifyPropertyChanged
                 DayOrder = task.GetProperty("day_order").GetInt16()
             });
         }
-        
+
         // Sort the tasks by day order
         todoistTasksNew.Sort((x, y) => x.DayOrder.CompareTo(y.DayOrder));
 

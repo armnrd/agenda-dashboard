@@ -57,10 +57,34 @@ public partial class TitleBar : UserControl
 
     private void RefreshMenuItem_Click(object sender, RoutedEventArgs e)
     {
-        GcalViewModel?.LoadGcalEventsAsync().ConfigureAwait(false);
-        TodoistViewModel?.LoadTodoistTasksAsync().ConfigureAwait(false);
-    }
+        try
+        {
+            GcalViewModel?.LoadGcalEventsAsync().ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            // Show an error message if loading fails
+            ((MainWindow)Application.Current.MainWindow).ShowNotification(
+                $"Error loading Google Calendar events: {ex.Message}", "Error");
+            // Log the exception to Trace
+            System.Diagnostics.Trace.WriteLine(
+                $"{DateTime.Now:HH:mm:ss} - Error loading Google Calendar events: {ex.Message}");
+        }
 
+        try
+        {
+            TodoistViewModel?.LoadTodoistTasksAsync().ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            // Show an error message if loading fails
+            ((MainWindow)Application.Current.MainWindow).ShowNotification($"Error loading Todoist tasks: {ex.Message}",
+                "Error");
+            // Log the exception to Trace
+            System.Diagnostics.Trace.WriteLine(
+                $"{DateTime.Now:HH:mm:ss} - Error loading Todoist tasks: {ex.Message}");
+        }
+    }
 
     private void LockMenuItem_Checked(object sender, RoutedEventArgs e)
     {
