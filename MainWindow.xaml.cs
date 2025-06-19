@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Windows;
@@ -16,20 +17,32 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-        
-        // Add status bar text scrolling animation
-        var animation = new DoubleAnimation
-        {
-            From = 0, // Start just outside the right edge TODO: Adjust this based on your layout
-            To = -200, // Move left past the left edge
-            Duration = TimeSpan.FromSeconds(8),
-            RepeatBehavior = RepeatBehavior.Forever
-        };
-        ScrollingStatusText.Loaded += (s, e) =>
-        {
-            StatusTextTransform.BeginAnimation(TranslateTransform.XProperty, animation);
-        };
-        
+
+        // Initialize status bar
+        var version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "1.0";
+        StatusBarMessage.Text = $"Agenda Dashboard v{version}";
+
+        // Add status bar text scrolling 
+        // StatusBarMessage.SizeChanged += (s, e) => // Use SizeChanged event instead of Loaded to ensure the width is correct
+        // {
+        //     if (StatusBarMessageItem.ActualWidth > StatusBarMessage.ActualWidth)
+        //     {
+        //         // If the StatusBarMessageItem is wider than the message text, don't scroll
+        //         StatusBarMessageTransform.X = 0;
+        //         return;
+        //     }
+        //     
+        //     var animation = new DoubleAnimation
+        //     {
+        //         From = 0,
+        //         To = -StatusBarMessage.ActualWidth,
+        //         Duration = TimeSpan.FromSeconds(8),
+        //         RepeatBehavior = RepeatBehavior.Forever
+        //     };
+        //     StatusBarMessageTransform.BeginAnimation(TranslateTransform.XProperty, animation); // TODO: fix this - status message is truncated
+        // };
+
+
         Loaded += MainWindow_Loaded; // Subscribe to the Loaded event to load events when the window is ready
     }
 
@@ -38,6 +51,7 @@ public partial class MainWindow : Window
         // Connect the view models from GcalView and TodoistView to TitleBar
         TitleBar.GcalViewModel = GcalView.DataContext as GcalViewModel;
         TitleBar.TodoistViewModel = TodoistView.DataContext as TodoistViewModel;
+        (Application.Current as App).NM.SetNotificationAction(ShowNotification);
     }
 
     protected override void OnSourceInitialized(EventArgs e)
@@ -66,10 +80,7 @@ public partial class MainWindow : Window
 
     public void ShowNotification(string message, string? status)
     {
-        ScrollingStatusText.Text = message;
-        if (!string.IsNullOrEmpty(status))
-        {
-            StatusBarStatus.Content = status;
-        }
+        StatusBarMessage.Text = message;
+        StatusBarStatusItem.Content = status;
     }
 }

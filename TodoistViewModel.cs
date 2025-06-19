@@ -42,32 +42,26 @@ public class TodoistViewModel : INotifyPropertyChanged
 
         // Set up a timer to refresh the tasks model
         var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(refreshInterval) };
-        timer.Tick += async (s, e) =>
-        {
-            try
-            {
-                await LoadTodoistTasksAsync();
-            }
-            catch (Exception ex)
-            {
-                // Show an error message if loading fails
-                ((MainWindow)Application.Current.MainWindow).ShowNotification($"Error loading Todoist tasks: {ex.Message}", "Error");
-                // Log the exception to Trace
-                System.Diagnostics.Trace.WriteLine(
-                    $"{DateTime.Now:HH:mm:ss} - Error loading Todoist tasks: {ex.Message}");
-            }
-        };
+        timer.Tick += async (s, e) => { SafeLoadTodoistTasks(); };
         timer.Start();
 
         // Load tasks immediately on startup
+        SafeLoadTodoistTasks();
+    }
+
+    public void SafeLoadTodoistTasks()
+    {
         try
         {
-            _ = LoadTodoistTasksAsync();
+            LoadTodoistTasksAsync().ConfigureAwait(false);
+            (Application.Current as App).NM.Enqueue(
+                "Loaded Todoist tasks.", "Success");
         }
         catch (Exception ex)
         {
             // Show an error message if loading fails
-            ((MainWindow)Application.Current.MainWindow).ShowNotification($"Error loading Todoist tasks: {ex.Message}", "Error");
+            (Application.Current as App).NM.Enqueue(
+                $"Error loading Todoist tasks: {ex.Message}", "Error");
             // Log the exception to Trace
             System.Diagnostics.Trace.WriteLine(
                 $"{DateTime.Now:HH:mm:ss} - Error loading Todoist tasks: {ex.Message}");

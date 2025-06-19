@@ -29,18 +29,26 @@
         <local:TodoistView x:Name="TodoistView" Grid.Row="3" Margin="0,0,0,0" />
 
         <StatusBar Height="24" Grid.Row="4" Margin="0,0,0,0">
-            <StatusBarItem HorizontalAlignment="Stretch">
-                <Canvas Height="16" HorizontalAlignment="Stretch" Margin="4,0,0,0">
-                    <TextBlock x:Name="ScrollingStatusText"
-                               Text="Agenda Dashboard v1.0 - Welcome!"
-                               VerticalAlignment="Center">
-                        <TextBlock.RenderTransform>
-                            <TranslateTransform x:Name="StatusTextTransform" />
-                        </TextBlock.RenderTransform>
-                    </TextBlock>
-                </Canvas>
+            <StatusBar.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                    </Grid>
+                </ItemsPanelTemplate>
+            </StatusBar.ItemsPanel>
+            <StatusBarItem x:Name="StatusBarMessageItem" Grid.Column="0" Margin="4,0,0,0">
+                <TextBlock x:Name="StatusBarMessage"
+                           VerticalAlignment="Center">
+                    <TextBlock.RenderTransform>
+                        <TranslateTransform x:Name="StatusBarMessageTransform" />
+                    </TextBlock.RenderTransform>
+                </TextBlock>
             </StatusBarItem>
-            <StatusBarItem x:Name="StatusBarStatus" HorizontalAlignment="Right" Margin="0,0,4,0" Content="Ready" FontWeight="Bold" />
+            <StatusBarItem x:Name="StatusBarStatusItem" Grid.Column="1" Margin="0,0,4,0" Content="Ready"
+                           FontWeight="Bold" />
         </StatusBar>
     </Grid>
 </Window>

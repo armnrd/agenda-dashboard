@@ -47,33 +47,24 @@ public class GcalViewModel : INotifyPropertyChanged
 
         // Set up a timer to refresh the events model
         var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(refreshInterval) };
-        timer.Tick += async (s, e) =>
-        {
-            try
-            {
-                await LoadGcalEventsAsync();
-            }
-            catch (Exception ex)
-            {
-                // Show an error message if loading fails
-                ((MainWindow)Application.Current.MainWindow).ShowNotification(
-                    $"Error loading Google Calendar events: {ex.Message}", "Error");
-                // Log the exception to Trace
-                System.Diagnostics.Trace.WriteLine(
-                    $"{DateTime.Now:HH:mm:ss} - Error loading Google Calendar events: {ex.Message}");
-            }
-        };
+        timer.Tick += async (s, e) => { SafeLoadGcalEvents(); };
         timer.Start();
 
         // Load events immediately on startup
+        SafeLoadGcalEvents();
+    }
+    
+    public void SafeLoadGcalEvents()
+    {
         try
         {
-            _ = LoadGcalEventsAsync();
+            LoadGcalEventsAsync().ConfigureAwait(false);
+            (Application.Current as App).NM.Enqueue("Loaded Google Calendar events.", "Success");
         }
         catch (Exception ex)
         {
             // Show an error message if loading fails
-            ((MainWindow)Application.Current.MainWindow).ShowNotification($"Error loading Google Calendar events: {ex.Message}", "Error");
+            (Application.Current as App).NM.Enqueue($"Error loading Google Calendar events: {ex.Message}", "Error");
             // Log the exception to Trace
             System.Diagnostics.Trace.WriteLine(
                 $"{DateTime.Now:HH:mm:ss} - Error loading Google Calendar events: {ex.Message}");
