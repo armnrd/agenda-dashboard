@@ -62,10 +62,19 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        Loaded += MainWindow_Loaded; // Subscribe to the Loaded event to load events when the window is ready
+    }
 
+    private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+    {
+        // Connect the view models from GcalView and TodoistView to TitleBar
+        TitleBar.GcalViewModel = GcalView.DataContext as GcalViewModel;
+        TitleBar.TodoistViewModel = TodoistView.DataContext as TodoistViewModel;
+        NM.SetNotificationAction(ShowNotification);
+        
         // Initialize status bar
         var version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "1.0";
-        StatusBarMessage.Text = $"Agenda Dashboard v{version}";
+        StatusBarMessage.Text = $"Agenda Dashboard v{version}"; // TODO: make this show a bit longer
 
         // Add status bar text scrolling 
         // StatusBarMessage.SizeChanged += (s, e) => // Use SizeChanged event instead of Loaded to ensure the width is correct
@@ -86,17 +95,6 @@ public partial class MainWindow : Window
         //     };
         //     StatusBarMessageTransform.BeginAnimation(TranslateTransform.XProperty, animation); // TODO: fix this - status message is truncated
         // };
-
-
-        Loaded += MainWindow_Loaded; // Subscribe to the Loaded event to load events when the window is ready
-    }
-
-    private void MainWindow_Loaded(object sender, RoutedEventArgs e)
-    {
-        // Connect the view models from GcalView and TodoistView to TitleBar
-        TitleBar.GcalViewModel = GcalView.DataContext as GcalViewModel;
-        TitleBar.TodoistViewModel = TodoistView.DataContext as TodoistViewModel;
-        NM.SetNotificationAction(ShowNotification);
     }
 
     protected override void OnSourceInitialized(EventArgs e)
@@ -106,8 +104,9 @@ public partial class MainWindow : Window
         // Load settings from settings.json
         var settings = JsonDocument.Parse(File.ReadAllText("settings.json"));
 
-        // Get the initial window position
+        // Get the initial window position from settings
         var positionElement = settings.RootElement.GetProperty("position");
+        // Set the initial position of the window
         this.Left = positionElement.GetProperty("x").GetInt32() - 4; // Offset by 4px because of the title bar
         this.Top = positionElement.GetProperty("y").GetInt32() - 4; // Same here
     }
@@ -123,7 +122,7 @@ public partial class MainWindow : Window
         int X, int Y, int cx, int cy,
         uint uFlags);
 
-    public void ShowNotification(string message, string? status)
+    private void ShowNotification(string message, string? status)
     {
         StatusBarMessage.Text = message;
         StatusBarStatusItem.Content = status;
