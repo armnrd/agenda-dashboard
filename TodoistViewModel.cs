@@ -21,7 +21,6 @@ public class TodoistTask
 
 public class TodoistViewModel : INotifyPropertyChanged
 {
-    private Timer _timer;
     private string _apiToken;
 
     public ObservableCollection<TodoistTask> TodoistTasks { get; set; } = new();
@@ -54,13 +53,13 @@ public class TodoistViewModel : INotifyPropertyChanged
         try
         {
             LoadTodoistTasksAsync().ConfigureAwait(false);
-            (Application.Current as App).NM.Enqueue(
+            (Application.Current.MainWindow as MainWindow).NM.Enqueue(
                 "Loaded Todoist tasks.", "Success");
         }
         catch (Exception ex)
         {
             // Show an error message if loading fails
-            (Application.Current as App).NM.Enqueue(
+            (Application.Current.MainWindow as MainWindow).NM.Enqueue(
                 $"Error loading Todoist tasks: {ex.Message}", "Error");
             // Log the exception to Trace
             System.Diagnostics.Trace.WriteLine(

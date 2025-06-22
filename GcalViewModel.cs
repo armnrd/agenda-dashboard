@@ -59,12 +59,12 @@ public class GcalViewModel : INotifyPropertyChanged
         try
         {
             LoadGcalEventsAsync().ConfigureAwait(false);
-            (Application.Current as App).NM.Enqueue("Loaded Google Calendar events.", "Success");
+            (Application.Current.MainWindow as MainWindow).NM.Enqueue("Loaded Google Calendar events.", "Success");
         }
         catch (Exception ex)
         {
             // Show an error message if loading fails
-            (Application.Current as App).NM.Enqueue($"Error loading Google Calendar events: {ex.Message}", "Error");
+            (Application.Current.MainWindow as MainWindow).NM.Enqueue($"Error loading Google Calendar events: {ex.Message}", "Error");
             // Log the exception to Trace
             System.Diagnostics.Trace.WriteLine(
                 $"{DateTime.Now:HH:mm:ss} - Error loading Google Calendar events: {ex.Message}");
