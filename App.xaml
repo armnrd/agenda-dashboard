@@ -26,5 +26,7 @@
                 </Trigger>
             </Style.Triggers>
         </Style>
+        
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
     </Application.Resources>
 </Application>

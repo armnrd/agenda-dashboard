@@ -3,33 +3,51 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:AgendaDashboard">
     <UserControl.Resources>
-        <local:AddValueConverter x:Key="TaskWidthAdjust" Addend="-52"/>
+        <local:AddValueConverter x:Key="TaskWidthAdjustment" Addend="-52" />
+        <local:OrBooleanToVisibilityConverter x:Key="RefreshButtonVisibility" />
     </UserControl.Resources>
-    <ScrollViewer VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Disabled">
-        <ListBox ItemsSource="{Binding TodoistTasks}" Background="Transparent" BorderThickness="0">
-            <ListBox.ItemTemplate>
-                <DataTemplate>
-                    <Border Margin="8,4"
-                            Padding="12"
-                            Background="White"
-                            CornerRadius="8"
-                            BorderBrush="#DDD"
-                            BorderThickness="1">
-                        <!-- Effect="{DynamicResource {x:Static SystemParameters.DropShadowKey}}"> -->
-                        <DockPanel LastChildFill="True"
-                                   Width="{Binding ViewportWidth, RelativeSource={RelativeSource AncestorType=ScrollViewer}, Converter={StaticResource TaskWidthAdjust}}">
-                            <CheckBox IsChecked="{Binding Checked}" Margin="0,0,12,0" VerticalAlignment="Center" />
-                            <TextBlock Text="{Binding Content}"
-                                       VerticalAlignment="Center"
-                                       FontSize="12"
-                                       Foreground="#222"
-                                       TextTrimming="CharacterEllipsis"
-                                       DockPanel.Dock="Right">
-                            </TextBlock>
-                        </DockPanel>
-                    </Border>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
-    </ScrollViewer>
+    <Grid>
+        <ScrollViewer x:Name="ScrollViewer" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Disabled">
+            <ListBox ItemsSource="{Binding TodoistTasks}" Background="Transparent" BorderThickness="0">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Border Margin="8,4"
+                                Padding="12"
+                                Background="White"
+                                CornerRadius="8"
+                                BorderBrush="#DDD"
+                                BorderThickness="1">
+                            <!-- Effect="{DynamicResource {x:Static SystemParameters.DropShadowKey}}"> -->
+                            <DockPanel LastChildFill="True"
+                                       Width="{Binding ViewportWidth, RelativeSource={RelativeSource AncestorType=ScrollViewer}, Converter={StaticResource TaskWidthAdjustment}}">
+                                <CheckBox IsChecked="{Binding Checked}" Margin="0,0,12,0" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding Content}"
+                                           VerticalAlignment="Center"
+                                           FontSize="12"
+                                           Foreground="#222"
+                                           TextTrimming="CharacterEllipsis"
+                                           DockPanel.Dock="Right">
+                                </TextBlock>
+                            </DockPanel>
+                        </Border>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </ScrollViewer>
+
+        <Button x:Name="RefreshButton"
+                Content="&#x27F2;"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Bottom"
+                Padding="10"
+                Margin="0,0,26,8"
+                Click="RefreshButton_Click">
+            <Button.Visibility>
+                <MultiBinding Converter="{StaticResource RefreshButtonVisibility}">
+                    <Binding ElementName="ScrollViewer" Path="IsMouseOver" />
+                    <Binding ElementName="RefreshButton" Path="IsMouseOver" />
+                </MultiBinding>
+            </Button.Visibility>
+        </Button>
+    </Grid>
 </UserControl>

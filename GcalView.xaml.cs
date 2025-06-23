@@ -28,4 +28,9 @@ public partial class GcalView : UserControl
         };
         timer.Start();
     }
+
+    private void RefreshButton_Click(object sender, RoutedEventArgs e)
+    {
+        (DataContext as GcalViewModel)?.SafeLoadGcalEvents();
+    }
 }

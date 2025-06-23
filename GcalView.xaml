@@ -2,29 +2,50 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:AgendaDashboard">
-    <ScrollViewer x:Name="ScrollViewer" VerticalScrollBarVisibility="Visible">
-        <ItemsControl ItemsSource="{Binding GcalEvents}">
-            <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <local:GcalPanel Height="1600" />
-                </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-            <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                    <Border Background="{Binding CalendarColor}" CornerRadius="4" Margin="2" Padding="4"
-                            BorderBrush="Black" BorderThickness="0.5">
-                        <StackPanel>
-                            <TextBlock Text="{Binding Title}" FontSize="12" FontWeight="Bold" />
-                            <TextBlock Text="{Binding CalendarName}" FontSize="10" Foreground="DimGray" />
-                            <TextBlock FontSize="10">
-                                <Run Text="{Binding Start, StringFormat={}{0:HH:mm}}" />
-                                <Run Text=" - " />
-                                <Run Text="{Binding End, StringFormat={}{0:HH:mm}}" />
-                            </TextBlock>
-                        </StackPanel>
-                    </Border>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
-    </ScrollViewer>
+    <UserControl.Resources>
+        <local:OrBooleanToVisibilityConverter x:Key="RefreshButtonVisibility" />
+    </UserControl.Resources>
+    <Grid>
+        <ScrollViewer x:Name="ScrollViewer" VerticalScrollBarVisibility="Visible">
+            <ItemsControl ItemsSource="{Binding GcalEvents}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <local:GcalPanel Height="1600" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Background="{Binding CalendarColor}" CornerRadius="4" Margin="2" Padding="4"
+                                BorderBrush="Black" BorderThickness="0.5">
+                            <StackPanel>
+                                <TextBlock Text="{Binding Title}" FontSize="12" FontWeight="Bold" />
+                                <TextBlock Text="{Binding CalendarName}" FontSize="10" Foreground="DimGray" />
+                                <TextBlock FontSize="10">
+                                    <Run Text="{Binding Start, StringFormat={}{0:HH:mm}}" />
+                                    <Run Text=" - " />
+                                    <Run Text="{Binding End, StringFormat={}{0:HH:mm}}" />
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <Button x:Name="RefreshButton"
+                Content="&#x27F2;"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Bottom"
+                Padding="10"
+                Margin="0,0,26,8"
+                Click="RefreshButton_Click"
+                >
+            <Button.Visibility>
+                <MultiBinding Converter="{StaticResource RefreshButtonVisibility}">
+                    <Binding ElementName="ScrollViewer" Path="IsMouseOver" />
+                    <Binding ElementName="RefreshButton" Path="IsMouseOver" />
+                </MultiBinding>
+            </Button.Visibility>
+        </Button>
+    </Grid>
 </UserControl>
