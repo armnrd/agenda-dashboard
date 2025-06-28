@@ -53,22 +53,27 @@ public class GcalViewModel : INotifyPropertyChanged
         // Load events immediately on startup
         SafeLoadGcalEvents();
     }
-    
+
     public void SafeLoadGcalEvents()
     {
-        try
+        LoadGcalEventsAsync().ContinueWith(t =>
         {
-            LoadGcalEventsAsync().ConfigureAwait(false);
-            (Application.Current.MainWindow as MainWindow).NM.Enqueue("Loaded Google Calendar events.", "Success");
-        }
-        catch (Exception ex)
-        {
-            // Show an error message if loading fails
-            (Application.Current.MainWindow as MainWindow).NM.Enqueue($"Error loading Google Calendar events: {ex.Message}", "Error");
-            // Log the exception to Trace
-            System.Diagnostics.Trace.WriteLine(
-                $"{DateTime.Now:HH:mm:ss} - Error loading Google Calendar events: {ex.Message}");
-        }
+            if (t.IsFaulted)
+            {
+                // Show an error message if loading fails
+                (Application.Current.MainWindow as MainWindow).NM.Enqueue(
+                    $"GCal: {t.Exception.Message}", "Error", 5);
+                // Log the exception to Trace
+                System.Diagnostics.Trace.WriteLine(
+                    $"{DateTime.Now:HH:mm:ss} - GCal: {t.Exception.Message}");
+            }
+            else
+            {
+                // Successfully loaded events, show a success message
+                (Application.Current.MainWindow as MainWindow).NM.Enqueue("Loaded Google Calendar events.",
+                    "Success", 2);
+            }
+        }, TaskScheduler.FromCurrentSynchronizationContext());
     }
 
     public async Task LoadGcalEventsAsync()

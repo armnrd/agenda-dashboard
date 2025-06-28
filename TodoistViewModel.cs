@@ -50,21 +50,24 @@ public class TodoistViewModel : INotifyPropertyChanged
 
     public void SafeLoadTodoistTasks()
     {
-        try
+        LoadTodoistTasksAsync().ContinueWith(t =>
         {
-            LoadTodoistTasksAsync().ConfigureAwait(false);
-            (Application.Current.MainWindow as MainWindow).NM.Enqueue(
-                "Loaded Todoist tasks.", "Success");
-        }
-        catch (Exception ex)
-        {
-            // Show an error message if loading fails
-            (Application.Current.MainWindow as MainWindow).NM.Enqueue(
-                $"Error loading Todoist tasks: {ex.Message}", "Error");
-            // Log the exception to Trace
-            System.Diagnostics.Trace.WriteLine(
-                $"{DateTime.Now:HH:mm:ss} - Error loading Todoist tasks: {ex.Message}");
-        }
+            if (t.IsFaulted)
+            {
+                // Show an error message if loading fails
+                (Application.Current.MainWindow as MainWindow).NM.Enqueue(
+                    $"Todoist: {t.Exception.Message}", "Error", 5);
+                // Log the exception to Trace
+                System.Diagnostics.Trace.WriteLine(
+                    $"{DateTime.Now:HH:mm:ss} - Todoist: {t.Exception.Message}");
+            }
+            else
+            {
+                // Successfully loaded tasks, show a success message
+                (Application.Current.MainWindow as MainWindow).NM.Enqueue("Loaded Todoist tasks.",
+                    "Success", 2);
+            }
+        }, TaskScheduler.FromCurrentSynchronizationContext());
     }
 
     public async Task LoadTodoistTasksAsync()

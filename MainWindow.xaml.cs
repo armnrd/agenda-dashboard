@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Windows;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
@@ -14,54 +15,53 @@ namespace AgendaDashboard;
 /// </summary>
 public partial class MainWindow : Window
 {
-    public NotificationManager NM { get; set; } = new();
-    
-    public class NotificationManager
+    public NotificationManager NM;
+
+    public class NotificationManager(Action<string, string> notificationAction)
     {
-        private readonly Queue<(string message, string status)> _queue = new();
+        private readonly Queue<(string message, string status, double duration)> _queue = new();
         private bool _isShowing;
-        private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromSeconds(2) }; // Show notifications every 2 seconds
-        private Action<string, string> _notificationAction;
-    
-        public NotificationManager()
+
+        private readonly Action<string, string> _notificationAction = notificationAction ??
+                                                                      throw new ArgumentNullException(
+                                                                          nameof(notificationAction),
+                                                                          "Notification action cannot be null");
+
+        public void Enqueue(string message, string status, double duration = 2)
         {
-            _timer.Tick += (s, e) => ShowNext();
-        }
-    
-        public void SetNotificationAction(Action<string, string> notificationAction)
-        {
-            _notificationAction = notificationAction;
-            if (_queue.Count > 0 && !_isShowing)
+            _queue.Enqueue((message, status, duration));
+            if (!_isShowing)
                 ShowNext();
         }
-    
-        public void Enqueue(string message, string status)
-        {
-            _queue.Enqueue((message, status));
-            if (_notificationAction != null && !_isShowing)
-                ShowNext();
-        }
-    
+
         private void ShowNext()
         {
             if (_queue.Count == 0)
             {
                 _notificationAction?.Invoke("", "Ready"); // Clear status bar
                 _isShowing = false;
-                _timer.Stop();
                 return;
             }
-    
-            var (message, status) = _queue.Dequeue();
-            _notificationAction?.Invoke(message, status);
+
+            var (message, status, duration) = _queue.Dequeue();
+            _notificationAction.Invoke(message, status);
             _isShowing = true;
-            _timer.Start();
+
+            // Start a timer to show the next notification after duration seconds
+            var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(duration) };
+            timer.Tick += (s, e) =>
+            {
+                timer.Stop();
+                ShowNext(); // Show the next notification in the queue
+            };
+            timer.Start();
         }
     }
-    
+
     public MainWindow()
     {
         InitializeComponent();
+        NM = new NotificationManager(ShowNotification);
         Loaded += MainWindow_Loaded; // Subscribe to the Loaded event to load events when the window is ready
     }
 
@@ -70,31 +70,35 @@ public partial class MainWindow : Window
         // Connect the view models from GcalView and TodoistView to TitleBar
         TitleBar.GcalViewModel = GcalView.DataContext as GcalViewModel;
         TitleBar.TodoistViewModel = TodoistView.DataContext as TodoistViewModel;
-        NM.SetNotificationAction(ShowNotification);
-        
+
         // Initialize status bar
         var version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "1.0";
-        StatusBarMessage.Text = $"Agenda Dashboard v{version}"; // TODO: make this show a bit longer
+        NM.Enqueue($"Agenda Dashboard v{version}", "Ready", 5); // Show version in status bar
 
         // Add status bar text scrolling 
-        // StatusBarMessage.SizeChanged += (s, e) => // Use SizeChanged event instead of Loaded to ensure the width is correct
-        // {
-        //     if (StatusBarMessageItem.ActualWidth > StatusBarMessage.ActualWidth)
-        //     {
-        //         // If the StatusBarMessageItem is wider than the message text, don't scroll
-        //         StatusBarMessageTransform.X = 0;
-        //         return;
-        //     }
-        //     
-        //     var animation = new DoubleAnimation
-        //     {
-        //         From = 0,
-        //         To = -StatusBarMessage.ActualWidth,
-        //         Duration = TimeSpan.FromSeconds(8),
-        //         RepeatBehavior = RepeatBehavior.Forever
-        //     };
-        //     StatusBarMessageTransform.BeginAnimation(TranslateTransform.XProperty, animation); // TODO: fix this - status message is truncated
-        // };
+        StatusBarMessage.SizeChanged +=
+            (s, e) => // Use SizeChanged event to listen for changes to the status text 
+            {
+                if (StatusBarMessage.ActualWidth <= StatusBarMessageItem.ActualWidth)
+                {
+                    // If StatusBarMessageItem is at least as wide as StatusBarMessage, don't scroll
+                    StatusBarMessageTransform.BeginAnimation(TranslateTransform.XProperty, null);
+                    StatusBarMessageTransform.X = 0;
+                    return;
+                }
+
+                var animation = new DoubleAnimation
+                {
+                    From = 0,
+                    To = -StatusBarMessage.ActualWidth,
+                    // Make the StatusBarMessage.Text scroll right to left
+
+                    Duration = TimeSpan.FromSeconds(StatusBarMessage.ActualWidth * 0.01), // 1 second per 100 pixels
+                    RepeatBehavior = RepeatBehavior.Forever
+                };
+                // StatusBarMessageTransform.BeginAnimation(TranslateTransform.XProperty,
+                // animation); // TODO: fix this - status message is truncated
+            };
     }
 
     protected override void OnSourceInitialized(EventArgs e)
@@ -109,6 +113,11 @@ public partial class MainWindow : Window
         // Set the initial position of the window
         this.Left = positionElement.GetProperty("x").GetInt32() - 4; // Offset by 4px because of the title bar
         this.Top = positionElement.GetProperty("y").GetInt32() - 4; // Same here
+
+        // Make the window a tool window (no taskbar button, no alt-tab)
+        var hwnd = new WindowInteropHelper(this).Handle;
+        int exStyle = GetWindowLong(hwnd, -20); // GWL_EXSTYLE = -20
+        SetWindowLong(hwnd, -20, exStyle | 0x00000080); // WS_EX_TOOLWINDOW = 0x00000080
     }
 
     [DllImport("user32.dll")]
