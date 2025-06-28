@@ -19,8 +19,8 @@ public partial class GcalView : UserControl
         ScrollViewer.ScrollToVerticalOffset(
             (DateTime.Now.TimeOfDay.TotalMinutes / 1440) * ScrollViewer.ScrollableHeight); // 1440 minutes in a day
 
-        // Periodically scroll to the current time
-        var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(60) }; // Refresh every minute
+        // Scroll to the current time line every 60 seconds
+        var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(60) };
         timer.Tick += (s, args) =>
         {
             ScrollViewer.ScrollToVerticalOffset((DateTime.Now.TimeOfDay.TotalMinutes / 1440) *

@@ -13,8 +13,8 @@ public class GcalPanel : Panel
     // Constructor
     public GcalPanel()
     {
-        // Update the panel every 10 seconds
-        var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(10) }; // Refresh every 10 seconds
+        // Update the panel every 30 seconds - to keep the current time line updated
+        var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(30) };
         timer.Tick += (s, e) => InvalidateVisual();
         timer.Start();
     }
