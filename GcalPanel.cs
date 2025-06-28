@@ -75,16 +75,6 @@ public class GcalPanel : Panel
         }
     }
 
-    // Override MeasureOverride and ArrangeOverride to handle child elements
-    protected override Size MeasureOverride(Size availableSize)
-    {
-        foreach (UIElement child in Children)
-            child.Measure(availableSize);
-        double width = double.IsInfinity(availableSize.Width) ? 0 : availableSize.Width;
-        double height = double.IsInfinity(availableSize.Height) ? 0 : availableSize.Height;
-        return new Size(width, height);
-    }
-
     protected override Size ArrangeOverride(Size finalSize)
     {
         if (Children.Count == 0) return finalSize;
@@ -115,6 +105,8 @@ public class GcalPanel : Panel
 
         double totalMinutes = (_dayEnd - _dayStart).TotalMinutes;
 
+
+        double width = (finalSize.Width - 50) / maxColumns; // Subtract margin for the timeline
         foreach (var ev in events)
         {
             var child = Children
@@ -123,9 +115,9 @@ public class GcalPanel : Panel
 
             double top = ((ev.Start.TimeOfDay - _dayStart).TotalMinutes / totalMinutes) * finalSize.Height;
             double height = ((ev.End - ev.Start).TotalMinutes / totalMinutes) * finalSize.Height;
-            double width = (finalSize.Width - 50) / maxColumns; // Subtract margin for the timeline
             double left = columns[ev] * width + 40; // Add a small margin
 
+            child.Measure(new Size(width, height));
             child.Arrange(new Rect(left, top, width, height));
         }
 

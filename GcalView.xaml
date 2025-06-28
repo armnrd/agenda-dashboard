@@ -16,11 +16,11 @@
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <Border Background="{Binding CalendarColor}" CornerRadius="4" Margin="2" Padding="4"
-                                BorderBrush="Black" BorderThickness="0.5">
+                                BorderBrush="Black" BorderThickness="0.5" HorizontalAlignment="Stretch">
                             <StackPanel>
-                                <TextBlock Text="{Binding Title}" FontSize="12" FontWeight="Bold" />
-                                <TextBlock Text="{Binding CalendarName}" FontSize="10" Foreground="DimGray" />
-                                <TextBlock FontSize="10">
+                                <TextBlock Text="{Binding Title}" FontSize="10" FontWeight="Bold" TextTrimming="CharacterEllipsis" />
+                                <TextBlock Text="{Binding CalendarName}" FontSize="8" Foreground="DimGray" TextTrimming="CharacterEllipsis" />
+                                <TextBlock FontSize="8" TextTrimming="CharacterEllipsis">
                                     <Run Text="{Binding Start, StringFormat={}{0:HH:mm}}" />
                                     <Run Text=" - " />
                                     <Run Text="{Binding End, StringFormat={}{0:HH:mm}}" />
