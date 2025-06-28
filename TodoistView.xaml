@@ -36,12 +36,11 @@
         </ScrollViewer>
 
         <Button x:Name="RefreshButton"
-                Content="&#x27F2;"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Bottom"
-                Padding="10"
-                Margin="0,0,26,8"
-                Click="RefreshButton_Click">
+                Margin="0,0,26,9"
+                Click="RefreshButton_Click"
+                Style="{StaticResource RefreshButton}">
             <Button.Visibility>
                 <MultiBinding Converter="{StaticResource RefreshButtonVisibility}">
                     <Binding ElementName="ScrollViewer" Path="IsMouseOver" />
