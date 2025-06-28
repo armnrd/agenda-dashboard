@@ -17,6 +17,7 @@ public class TodoistTask
     public DateTime? DueDate { get; set; }
     public bool Checked { get; set; }
     public short DayOrder { get; set; }
+    public short ChildOrder { get; set; }
 }
 
 public class TodoistViewModel : INotifyPropertyChanged
@@ -92,12 +93,22 @@ public class TodoistViewModel : INotifyPropertyChanged
                 Content = task.GetProperty("content").GetString(),
                 Checked = task.GetProperty("checked").GetBoolean(),
                 DueDate = DateTime.Parse(task.GetProperty("due").GetProperty("date").GetString()),
-                DayOrder = task.GetProperty("day_order").GetInt16()
+                DayOrder = task.GetProperty("day_order").GetInt16(),
+                ChildOrder = task.GetProperty("child_order").GetInt16()
             });
         }
 
         // Sort the tasks by day order
-        todoistTasksNew.Sort((x, y) => x.DayOrder.CompareTo(y.DayOrder));
+        todoistTasksNew.Sort((x, y) =>
+        {
+            // If either task has a DayOrder of -1, it should be sorted to the end
+            if (x.DayOrder == -1)
+                return 1;
+            if (y.DayOrder == -1)
+                return -1;
+
+            return x.DayOrder.CompareTo(y.DayOrder);
+        });
 
         // Update the TodoistTasks collection from within the UI thread
         Application.Current.Dispatcher.Invoke(() =>
@@ -107,21 +118,6 @@ public class TodoistViewModel : INotifyPropertyChanged
             foreach (var todoistTask in todoistTasksNew)
                 TodoistTasks.Add(todoistTask);
         });
-    }
-
-
-    private class TodoistTaskDto
-    {
-        public string id { get; set; }
-        public string content { get; set; }
-        public string[] labels { get; set; }
-        public bool is_completed { get; set; }
-        public DueDto due { get; set; }
-    }
-
-    private class DueDto
-    {
-        public string date { get; set; }
     }
 
     protected void OnPropertyChanged(string propertyName) =>
