@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:AgendaDashboard">
     <UserControl.Resources>
-        <local:OrBooleanToVisibilityConverter x:Key="RefreshButtonVisibility" />
+        <local:OrBooleanToVisibilityConverter x:Key="PanelButtonVisibility" />
     </UserControl.Resources>
     <Grid>
         <ScrollViewer x:Name="ScrollViewer" VerticalScrollBarVisibility="Visible">
@@ -15,11 +15,19 @@
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Border Background="{Binding CalendarColor}" CornerRadius="4" Margin="2" Padding="4"
-                                BorderBrush="Black" BorderThickness="0.5" HorizontalAlignment="Stretch">
+                        <Border Background="{Binding CalendarColor}"
+                                CornerRadius="4"
+                                Margin="2"
+                                Padding="4"
+                                HorizontalAlignment="Stretch">
+                            <Border.Effect>
+                                <DropShadowEffect Color="#888" BlurRadius="8" ShadowDepth="2" Opacity="0.4" />
+                            </Border.Effect>
                             <StackPanel>
-                                <TextBlock Text="{Binding Title}" FontSize="10" FontWeight="Bold" TextTrimming="CharacterEllipsis" />
-                                <TextBlock Text="{Binding CalendarName}" FontSize="8" Foreground="DimGray" TextTrimming="CharacterEllipsis" />
+                                <TextBlock Text="{Binding Title}" FontSize="10" FontWeight="Medium"
+                                           TextTrimming="CharacterEllipsis" />
+                                <TextBlock Text="{Binding CalendarName}" FontSize="8" Foreground="DimGray"
+                                           TextTrimming="CharacterEllipsis" />
                                 <TextBlock FontSize="8" TextTrimming="CharacterEllipsis">
                                     <Run Text="{Binding Start, StringFormat={}{0:HH:mm}}" />
                                     <Run Text=" - " />
@@ -31,16 +39,98 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
         </ScrollViewer>
+        
+        <Button x:Name="PreviousDayButton"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Bottom"
+                Margin="9,0,0,9"
+                Click="PreviousDayButton_Click"
+                Style="{StaticResource PanelButton}">
+            <Button.Content>
+                <TextBlock Text="&#x23F4;" Margin="5,0,5,4">
+                    <TextBlock.LayoutTransform>
+                        <ScaleTransform ScaleX="1.4" ScaleY="1.4" />
+                    </TextBlock.LayoutTransform>
+                </TextBlock>
+            </Button.Content>
+            <Button.Visibility>
+                <MultiBinding Converter="{StaticResource PanelButtonVisibility}">
+                    <Binding ElementName="ScrollViewer" Path="IsMouseOver" />
+                    <Binding ElementName="PreviousDayButton" Path="IsMouseOver" />
+                    <Binding ElementName="CurrentDayButton" Path="IsMouseOver" />
+                    <Binding ElementName="NextDayButton" Path="IsMouseOver" />
+                    <Binding ElementName="RefreshButton" Path="IsMouseOver" />
+                </MultiBinding>
+            </Button.Visibility>
+        </Button>
+        
+        <Button x:Name="CurrentDayButton"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Bottom"
+                Margin="44,0,0,9"
+                Click="CurrentDayButton_Click"
+                Style="{StaticResource PanelButton}">
+            <Button.Content>
+                <TextBlock Text="&#x25CF;" Margin="9,0,9,4">
+                    <TextBlock.LayoutTransform>
+                        <ScaleTransform ScaleX="1.4" ScaleY="1.4" />
+                    </TextBlock.LayoutTransform>
+                </TextBlock>
+            </Button.Content>
+            <Button.Visibility>
+                <MultiBinding Converter="{StaticResource PanelButtonVisibility}">
+                    <Binding ElementName="ScrollViewer" Path="IsMouseOver" />
+                    <Binding ElementName="PreviousDayButton" Path="IsMouseOver" />
+                    <Binding ElementName="CurrentDayButton" Path="IsMouseOver" />
+                    <Binding ElementName="NextDayButton" Path="IsMouseOver" />
+                    <Binding ElementName="RefreshButton" Path="IsMouseOver" />
+                </MultiBinding>
+            </Button.Visibility>
+        </Button>
+        
+        <Button x:Name="NextDayButton"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Bottom"
+                Margin="80,0,0,9"
+                Click="NextDayButton_Click"
+                Style="{StaticResource PanelButton}">
+            <Button.Content>
+                <TextBlock Text="&#x23F5;" Margin="5,0,5,4">
+                    <TextBlock.LayoutTransform>
+                        <ScaleTransform ScaleX="1.4" ScaleY="1.4" />
+                    </TextBlock.LayoutTransform>
+                </TextBlock>
+            </Button.Content>
+            <Button.Visibility>
+                <MultiBinding Converter="{StaticResource PanelButtonVisibility}">
+                    <Binding ElementName="ScrollViewer" Path="IsMouseOver" />
+                    <Binding ElementName="PreviousDayButton" Path="IsMouseOver" />
+                    <Binding ElementName="CurrentDayButton" Path="IsMouseOver" />
+                    <Binding ElementName="NextDayButton" Path="IsMouseOver" />
+                    <Binding ElementName="RefreshButton" Path="IsMouseOver" />
+                </MultiBinding>
+            </Button.Visibility>
+        </Button>
 
         <Button x:Name="RefreshButton"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Bottom"
                 Margin="0,0,26,9"
                 Click="RefreshButton_Click"
-                Style="{StaticResource RefreshButton}">
+                Style="{StaticResource PanelButton}">
+            <Button.Content>
+                <TextBlock Text="&#x27F2;" Margin="6,0,6,4">
+                    <TextBlock.LayoutTransform>
+                        <ScaleTransform ScaleX="1.4" ScaleY="1.4" />
+                    </TextBlock.LayoutTransform>
+                </TextBlock>
+            </Button.Content>
             <Button.Visibility>
-                <MultiBinding Converter="{StaticResource RefreshButtonVisibility}">
+                <MultiBinding Converter="{StaticResource PanelButtonVisibility}">
                     <Binding ElementName="ScrollViewer" Path="IsMouseOver" />
+                    <Binding ElementName="PreviousDayButton" Path="IsMouseOver" />
+                    <Binding ElementName="CurrentDayButton" Path="IsMouseOver" />
+                    <Binding ElementName="NextDayButton" Path="IsMouseOver" />
                     <Binding ElementName="RefreshButton" Path="IsMouseOver" />
                 </MultiBinding>
             </Button.Visibility>

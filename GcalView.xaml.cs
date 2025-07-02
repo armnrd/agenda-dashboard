@@ -28,7 +28,28 @@ public partial class GcalView : UserControl
         };
         timer.Start();
     }
-
+    
+    private void PreviousDayButton_Click(object sender, RoutedEventArgs e)
+    {
+        var viewModel = DataContext as GcalViewModel;
+        viewModel.DecrementTargetDate(); 
+        viewModel.SafeLoadGcalEvents();
+    }
+    
+    private void CurrentDayButton_Click(object sender, RoutedEventArgs e)
+    {
+        var viewModel = DataContext as GcalViewModel;
+        viewModel.ResetTargetDate(); 
+        viewModel.SafeLoadGcalEvents();
+    }
+    
+    private void NextDayButton_Click(object sender, RoutedEventArgs e)
+    {
+        var viewModel = DataContext as GcalViewModel;
+        viewModel.IncrementTargetDate(); 
+        viewModel.SafeLoadGcalEvents();
+    }
+    
     private void RefreshButton_Click(object sender, RoutedEventArgs e)
     {
         (DataContext as GcalViewModel)?.SafeLoadGcalEvents();

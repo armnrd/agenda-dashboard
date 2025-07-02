@@ -7,16 +7,21 @@
         <local:OrBooleanToVisibilityConverter x:Key="RefreshButtonVisibility" />
     </UserControl.Resources>
     <Grid>
-        <ListBox x:Name="ListBox" ItemsSource="{Binding TodoistTasks}" Background="Transparent" BorderThickness="0"
-                 ScrollViewer.VerticalScrollBarVisibility="Visible" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+        <ListBox x:Name="ListBox"
+                 ItemsSource="{Binding TodoistTasks}"
+                 Background="Transparent"
+                 BorderThickness="0"
+                 Padding="6,8,6,8"
+                 ScrollViewer.VerticalScrollBarVisibility="Visible"
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <Border Padding="4"
+                            Margin="0,2"
                             Background="White"
                             CornerRadius="4"
                             BorderBrush="#DDD"
                             BorderThickness="1">
-                        <!-- Effect="{DynamicResource {x:Static SystemParameters.DropShadowKey}}"> -->
                         <DockPanel LastChildFill="True"
                                    Width="{Binding ViewportWidth,
                                    RelativeSource={RelativeSource AncestorType=ScrollViewer},
@@ -40,7 +45,7 @@
                 VerticalAlignment="Bottom"
                 Margin="0,0,26,9"
                 Click="RefreshButton_Click"
-                Style="{StaticResource RefreshButton}">
+                Style="{StaticResource PanelButton}">
             <Button.Visibility>
                 <MultiBinding Converter="{StaticResource RefreshButtonVisibility}">
                     <Binding ElementName="ListBox" Path="IsMouseOver" />

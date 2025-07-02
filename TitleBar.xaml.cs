@@ -27,12 +27,22 @@ public partial class TitleBar : UserControl
             }
     }
 
-    private void MainMenuButton_Click(object sender, RoutedEventArgs e)
+    private void MainMenuButton_Checked(object sender, RoutedEventArgs e)
     {
-        // TODO: fix menu placement
-        MainMenuButton.ContextMenu.PlacementTarget = MainMenuButton;
-        MainMenuButton.ContextMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
-        MainMenuButton.ContextMenu.IsOpen = true;
+        MainMenu.PlacementTarget = MainMenuButton;
+        MainMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
+        MainMenu.IsOpen = true;
+        MainMenu.HorizontalOffset = MainMenu.ActualWidth - MainMenuButton.ActualWidth;
+    }
+    
+    private void MainMenuButton_Unchecked(object sender, RoutedEventArgs e)
+    {
+        MainMenu.IsOpen = false;
+    }
+    
+    private void MainMenu_Closed(object sender, RoutedEventArgs e)
+    {
+        MainMenuButton.IsChecked = false;
     }
 
     private void RefreshMenuItem_Click(object sender, RoutedEventArgs e)

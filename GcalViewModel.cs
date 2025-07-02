@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
+using System.Runtime.InteropServices.JavaScript;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Media;
@@ -24,6 +25,7 @@ public class GcalEvent
 public class GcalViewModel : INotifyPropertyChanged
 {
     private List<string> _ignoredIds;
+    private DateTime _targetDate;
 
     public ObservableCollection<GcalEvent> GcalEvents { get; set; } = new();
 
@@ -32,6 +34,9 @@ public class GcalViewModel : INotifyPropertyChanged
         // Load settings from settings.json
         var settings = JsonDocument.Parse(File.ReadAllText("settings.json"));
 
+        // Set the target date to today
+        _targetDate = DateTime.Now.Date;
+        
         // Get the list of ignored calendar IDs
         var ignoredIdsElement = settings.RootElement
             .GetProperty("google-calendar")
@@ -53,7 +58,22 @@ public class GcalViewModel : INotifyPropertyChanged
         // Load events immediately on startup
         SafeLoadGcalEvents();
     }
+    
+    public void DecrementTargetDate()
+    {
+        _targetDate = _targetDate.AddDays(-1);
+    }
+    
+    public void ResetTargetDate()
+    {
+        _targetDate = DateTime.Now.Date;
+    }
 
+    public void IncrementTargetDate()
+    {
+        _targetDate = _targetDate.AddDays(1);
+    }
+    
     public void SafeLoadGcalEvents()
     {
         LoadGcalEventsAsync().ContinueWith(t =>
@@ -112,8 +132,8 @@ public class GcalViewModel : INotifyPropertyChanged
 
             // Define parameters of request.
             var request = service.Events.List(calendar.Id);
-            request.TimeMin = DateTime.Now.Date;
-            request.TimeMax = DateTime.Now.Date.AddDays(1);
+            request.TimeMin = _targetDate;
+            request.TimeMax = _targetDate.AddDays(1);
             request.ShowDeleted = false;
             request.SingleEvents = true;
             request.OrderBy = EventsResource.ListRequest.OrderByEnum.StartTime;

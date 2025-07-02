@@ -2,20 +2,23 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <DockPanel Height="32" Style="{StaticResource TitleBar}">
-        <Button x:Name="MainMenuButton" Width="32" DockPanel.Dock="Left"
+        <ToggleButton x:Name="MainMenuButton" Width="32" DockPanel.Dock="Left"
                 Content="&#x2630;"
                 ToolTip="Menu"
-                Click="MainMenuButton_Click"
+                Checked="MainMenuButton_Checked"
+                Unchecked="MainMenuButton_Unchecked"
                 WindowChrome.IsHitTestVisibleInChrome="True"
                 Style="{StaticResource TitleBarButton}">
-            <Button.ContextMenu>
-                <ContextMenu x:Name="MainMenu">
+            <ToggleButton.ContextMenu>
+                <ContextMenu x:Name="MainMenu"
+                             Closed="MainMenu_Closed"
+                             Style="{StaticResource TitleBarContextMenu}">
                     <MenuItem Header="Refresh" Click="RefreshMenuItem_Click" />
                     <MenuItem Header="Lock Window" IsCheckable="True" Checked="LockMenuItem_Checked" Unchecked="LockMenuItem_Unchecked" />
                     <MenuItem Header="Exit" Click="ExitMenuItem_Click" />
                 </ContextMenu>
-            </Button.ContextMenu>
-        </Button>
+            </ToggleButton.ContextMenu>
+        </ToggleButton>
         
         <TextBlock Text="Agenda Dashboard" Foreground="White" VerticalAlignment="Center" DockPanel.Dock="Left" Padding="8,0,8,0" Margin="0" />
         
