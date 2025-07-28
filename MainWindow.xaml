@@ -7,9 +7,8 @@
         mc:Ignorable="d"
         Title="Agenda Dashboard"
         Width="416" Height="832"
-        ShowInTaskbar="False"
-        WindowStyle="None"
-        Topmost="False">
+        ShowActivated="False"
+        WindowStyle="None">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />

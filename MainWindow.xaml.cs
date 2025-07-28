@@ -65,6 +65,37 @@ public partial class MainWindow : Window
         Loaded += MainWindow_Loaded; // Subscribe to the Loaded event to load events when the window is ready
     }
 
+    [DllImport("user32.dll")]
+    private static extern int GetWindowLongPtr(IntPtr hWnd, int nIndex);
+
+    [DllImport("user32.dll")]
+    private static extern int SetWindowLongPtr(IntPtr hWnd, int nIndex, int dwNewLong);
+
+    protected override void OnSourceInitialized(EventArgs e)
+    {
+        base.OnSourceInitialized(e);
+
+        // Load settings from settings.json
+        var settings = JsonDocument.Parse(File.ReadAllText("settings.json"));
+
+        // Get the initial window position from settings
+        var positionElement = settings.RootElement.GetProperty("position");
+        // Set the initial position of the window
+        this.Left = positionElement.GetProperty("x").GetInt32() - 4; // Offset by 4px because of the title bar
+        this.Top = positionElement.GetProperty("y").GetInt32() - 4; // Same here
+
+        var hwnd = new WindowInteropHelper(this).Handle;
+        
+        // Make the window a tool window: doesn't show up in taskbar or alt-tab switcher
+        const int GWLP_EXSTYLE = -20; // Extended window styles
+        const int WS_EX_TOOLWINDOW = 0x00000080, WS_EX_APPWINDOW = 0x00040000;
+        int exStyle = GetWindowLongPtr(hwnd, GWLP_EXSTYLE);
+        // Add TOOLWINDOW, remove APPWINDOW from the extended styles
+        exStyle |= WS_EX_TOOLWINDOW;
+        exStyle &= ~WS_EX_APPWINDOW;
+        SetWindowLongPtr(hwnd, GWLP_EXSTYLE, exStyle);
+    }
+
     private void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
         // Connect the view models from GcalView and TodoistView to TitleBar
@@ -100,36 +131,6 @@ public partial class MainWindow : Window
                 // animation); // TODO: fix this - status message is truncated
             };
     }
-
-    protected override void OnSourceInitialized(EventArgs e)
-    {
-        base.OnSourceInitialized(e);
-
-        // Load settings from settings.json
-        var settings = JsonDocument.Parse(File.ReadAllText("settings.json"));
-
-        // Get the initial window position from settings
-        var positionElement = settings.RootElement.GetProperty("position");
-        // Set the initial position of the window
-        this.Left = positionElement.GetProperty("x").GetInt32() - 4; // Offset by 4px because of the title bar
-        this.Top = positionElement.GetProperty("y").GetInt32() - 4; // Same here
-
-        // Make the window a tool window (no taskbar button, no alt-tab)
-        var hwnd = new WindowInteropHelper(this).Handle;
-        int exStyle = GetWindowLong(hwnd, -20); // GWL_EXSTYLE = -20
-        SetWindowLong(hwnd, -20, exStyle | 0x00000080); // WS_EX_TOOLWINDOW = 0x00000080
-    }
-
-    [DllImport("user32.dll")]
-    private static extern int GetWindowLong(IntPtr hWnd, int nIndex);
-
-    [DllImport("user32.dll")]
-    private static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
-
-    [DllImport("user32.dll")]
-    private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter,
-        int X, int Y, int cx, int cy,
-        uint uFlags);
 
     private void ShowNotification(string message, string? status)
     {
