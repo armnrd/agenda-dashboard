@@ -4,7 +4,7 @@
              xmlns:local="clr-namespace:AgendaDashboard">
     <UserControl.Resources>
         <local:AddValueConverter x:Key="TaskWidthAdjustment" Addend="-21" />
-        <local:OrBooleanToVisibilityConverter x:Key="RefreshButtonVisibility" />
+        <local:OrBooleanToVisibilityConverter x:Key="PanelButtonVisibility" />
     </UserControl.Resources>
     <Grid>
         <ListBox x:Name="ListBox"
@@ -46,8 +46,15 @@
                 Margin="0,0,26,9"
                 Click="RefreshButton_Click"
                 Style="{StaticResource PanelButton}">
+            <Button.Content>
+                <TextBlock Text="&#x27F2;" Margin="6,0,6,4">
+                    <TextBlock.LayoutTransform>
+                        <ScaleTransform ScaleX="1.4" ScaleY="1.4" />
+                    </TextBlock.LayoutTransform>
+                </TextBlock>
+            </Button.Content>
             <Button.Visibility>
-                <MultiBinding Converter="{StaticResource RefreshButtonVisibility}">
+                <MultiBinding Converter="{StaticResource PanelButtonVisibility}">
                     <Binding ElementName="ListBox" Path="IsMouseOver" />
                     <Binding ElementName="RefreshButton" Path="IsMouseOver" />
                 </MultiBinding>
