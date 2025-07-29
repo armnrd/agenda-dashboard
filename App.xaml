@@ -5,55 +5,5 @@
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-        <Style x:Key="PanelButton" TargetType="Button">
-            <Setter Property="Background" Value="#FF2D2D30" />
-            <Setter Property="Foreground" Value="White" />
-            <Setter Property="BorderBrush" Value="Transparent" />
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="Border"
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                Opacity="0.8"
-                                CornerRadius="4">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <EventTrigger RoutedEvent="Button.Click">
-                                <BeginStoryboard>
-                                    <Storyboard>
-                                        <DoubleAnimation Storyboard.TargetName="Border"
-                                                         Storyboard.TargetProperty="Opacity"
-                                                         To="0"
-                                                         Duration="0:0:0.5" />
-                                        <DoubleAnimation Storyboard.TargetName="Border"
-                                                         Storyboard.TargetProperty="Opacity"
-                                                         To="0.8"
-                                                         BeginTime="0:0:2"
-                                                         Duration="0:0:0.2" />
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Border"
-                                                                       Storyboard.TargetProperty="IsHitTestVisible">
-                                            <DiscreteObjectKeyFrame KeyTime="0:0:0">
-                                                <DiscreteObjectKeyFrame.Value>
-                                                    <sys:Boolean>False</sys:Boolean>
-                                                </DiscreteObjectKeyFrame.Value>
-                                            </DiscreteObjectKeyFrame>
-                                            <DiscreteObjectKeyFrame KeyTime="0:0:2.7">
-                                                <DiscreteObjectKeyFrame.Value>
-                                                    <sys:Boolean>True</sys:Boolean>
-                                                </DiscreteObjectKeyFrame.Value>
-                                            </DiscreteObjectKeyFrame>
-                                        </ObjectAnimationUsingKeyFrames>
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </EventTrigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
     </Application.Resources>
 </Application>
