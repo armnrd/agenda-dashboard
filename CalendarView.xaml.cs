@@ -4,12 +4,12 @@ using System.Windows.Threading;
 
 namespace AgendaDashboard;
 
-public partial class GcalView : UserControl
+public partial class CalendarView : UserControl
 {
-    public GcalView()
+    public CalendarView()
     {
         InitializeComponent();
-        DataContext = new GcalViewModel();
+        DataContext = new CalendarViewModel();
         Loaded += CalendarView_Loaded; // Subscribe to the Loaded event to load events when the window is ready
     }
 
@@ -31,27 +31,27 @@ public partial class GcalView : UserControl
     
     private void PreviousDayButton_Click(object sender, RoutedEventArgs e)
     {
-        var viewModel = DataContext as GcalViewModel;
-        viewModel.DecrementTargetDate(); 
-        viewModel.SafeLoadGcalEvents();
+        var viewModel = DataContext as CalendarViewModel;
+        viewModel.DecrementTargetDate();
+        viewModel.RefreshAsync();
     }
     
     private void CurrentDayButton_Click(object sender, RoutedEventArgs e)
     {
-        var viewModel = DataContext as GcalViewModel;
-        viewModel.ResetTargetDate(); 
-        viewModel.SafeLoadGcalEvents();
+        var viewModel = DataContext as CalendarViewModel;
+        viewModel.ResetTargetDate();
+        viewModel.RefreshAsync();
     }
     
     private void NextDayButton_Click(object sender, RoutedEventArgs e)
     {
-        var viewModel = DataContext as GcalViewModel;
-        viewModel.IncrementTargetDate(); 
-        viewModel.SafeLoadGcalEvents();
+        var viewModel = DataContext as CalendarViewModel;
+        viewModel.IncrementTargetDate();
+        viewModel.RefreshAsync();
     }
     
     private void RefreshButton_Click(object sender, RoutedEventArgs e)
     {
-        (DataContext as GcalViewModel)?.SafeLoadGcalEvents();
+        (DataContext as CalendarViewModel).RefreshAsync();
     }
 }

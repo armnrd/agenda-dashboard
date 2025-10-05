@@ -1,12 +1,10 @@
-﻿using System.IO;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Text.Json;
 using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
-using System.Windows.Threading;
+using YamlDotNet.RepresentationModel;
 
 namespace AgendaDashboard;
 
@@ -15,74 +13,20 @@ namespace AgendaDashboard;
 /// </summary>
 public partial class MainWindow : Window
 {
-    public NotificationManager NM;
-
-    public class NotificationManager(Action<string, string> notificationAction)
-    {
-        private readonly Queue<(string message, string status, double duration)> _queue = new();
-        private bool _isShowing;
-
-        private readonly Action<string, string> _notificationAction = notificationAction ??
-                                                                      throw new ArgumentNullException(
-                                                                          nameof(notificationAction),
-                                                                          "Notification action cannot be null");
-
-        public void Enqueue(string message, string status, double duration = 2)
-        {
-            _queue.Enqueue((message, status, duration));
-            if (!_isShowing)
-                ShowNext();
-        }
-
-        private void ShowNext()
-        {
-            if (_queue.Count == 0)
-            {
-                _notificationAction?.Invoke("", "Ready"); // Clear status bar
-                _isShowing = false;
-                return;
-            }
-
-            var (message, status, duration) = _queue.Dequeue();
-            _notificationAction.Invoke(message, status);
-            _isShowing = true;
-
-            // Start a timer to show the next notification after duration seconds
-            var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(duration) };
-            timer.Tick += (s, e) =>
-            {
-                timer.Stop();
-                ShowNext(); // Show the next notification in the queue
-            };
-            timer.Start();
-        }
-    }
-
     public MainWindow()
     {
         InitializeComponent();
-        NM = new NotificationManager(ShowNotification);
-        Loaded += MainWindow_Loaded; // Subscribe to the Loaded event to load events when the window is ready
+        Loaded += MainWindow_Loaded;
     }
-
-    [DllImport("user32.dll")]
-    private static extern int GetWindowLongPtr(IntPtr hWnd, int nIndex);
-
-    [DllImport("user32.dll")]
-    private static extern int SetWindowLongPtr(IntPtr hWnd, int nIndex, int dwNewLong);
 
     protected override void OnSourceInitialized(EventArgs e)
     {
         base.OnSourceInitialized(e);
 
-        // Load settings from settings.json
-        var settings = JsonDocument.Parse(File.ReadAllText("settings.json"));
-
-        // Get the initial window position from settings
-        var positionElement = settings.RootElement.GetProperty("position");
-        // Set the initial position of the window
-        this.Left = positionElement.GetProperty("x").GetInt32() - 4; // Offset by 4px because of the title bar
-        this.Top = positionElement.GetProperty("y").GetInt32() - 4; // Same here
+        // Set the initial window position from settings
+        var config = (Application.Current as App).ConfigMgr.Config;
+        Left = double.Parse(((YamlScalarNode)config["general"]["x position"]).Value) - 4; // Offset by 4px because of the title bar
+        Top = double.Parse(((YamlScalarNode)config["general"]["y position"]).Value) - 4; // Same here
 
         var hwnd = new WindowInteropHelper(this).Handle;
         
@@ -96,15 +40,21 @@ public partial class MainWindow : Window
         SetWindowLongPtr(hwnd, GWLP_EXSTYLE, exStyle);
     }
 
+    internal void ShowNotification(string message, string? status)
+    {
+        StatusBarMessage.Text = message;
+        StatusBarStatusItem.Content = status;
+    }
+
     private void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
-        // Connect the view models from GcalView and TodoistView to TitleBar
-        TitleBar.GcalViewModel = GcalView.DataContext as GcalViewModel;
+        // Connect the view models from CalendarView and TodoistView to TitleBar
+        TitleBar.CalendarViewModel = GcalView.DataContext as CalendarViewModel;
         TitleBar.TodoistViewModel = TodoistView.DataContext as TodoistViewModel;
 
         // Initialize status bar
         var version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "1.0";
-        NM.Enqueue($"Agenda Dashboard v{version}", "Ready", 5); // Show version in status bar
+        ShowNotification($"Agenda Dashboard v{version}", "Ready"); // Show version in status bar
 
         // Add status bar text scrolling 
         StatusBarMessage.SizeChanged +=
@@ -132,9 +82,9 @@ public partial class MainWindow : Window
             };
     }
 
-    private void ShowNotification(string message, string? status)
-    {
-        StatusBarMessage.Text = message;
-        StatusBarStatusItem.Content = status;
-    }
+    [DllImport("user32.dll")]
+    private static extern int GetWindowLongPtr(IntPtr hWnd, int nIndex);
+
+    [DllImport("user32.dll")]
+    private static extern int SetWindowLongPtr(IntPtr hWnd, int nIndex, int dwNewLong);
 }

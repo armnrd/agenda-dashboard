@@ -79,46 +79,39 @@ public class GcalPanel : Panel
     {
         if (Children.Count == 0) return finalSize;
 
-        var events = Children
+        var eventPairs = Children
             .OfType<FrameworkElement>()
-            .Select(e => e.DataContext as GcalEvent)
-            .Where(e => e != null)
-            .OrderBy(e => e.Start)
+            .Select(elem => (elem, elem.DataContext as GcalEvent))
+            .Where(pair => pair.Item2 != null)
+            .OrderBy(pair => pair.Item2.Start)
             .ToList();
 
         // Assign columns for overlapping events
         var columns = new Dictionary<GcalEvent, int>();
         var columnEnds = new List<DateTime>();
-        foreach (var ev in events)
+        foreach (var (_, evt) in eventPairs)
         {
             int col = 0;
-            while (col < columnEnds.Count && ev.Start < columnEnds[col])
+            while (col < columnEnds.Count && evt.Start < columnEnds[col])
                 col++;
             if (col == columnEnds.Count)
-                columnEnds.Add(ev.End);
+                columnEnds.Add(evt.End);
             else
-                columnEnds[col] = ev.End;
-            columns[ev] = col;
+                columnEnds[col] = evt.End;
+            columns[evt] = col;
         }
 
         int maxColumns = columnEnds.Count;
-
         double totalMinutes = (_dayEnd - _dayStart).TotalMinutes;
-
-
         double width = (finalSize.Width - 50) / maxColumns; // Subtract margin for the timeline
-        foreach (var ev in events)
+        foreach (var (elem, evt) in eventPairs)
         {
-            var child = Children
-                .OfType<FrameworkElement>()
-                .First(e => e.DataContext == ev);
+            double top = ((evt.Start.TimeOfDay - _dayStart).TotalMinutes / totalMinutes) * finalSize.Height;
+            double height = ((evt.End - evt.Start).TotalMinutes / totalMinutes) * finalSize.Height;
+            double left = columns[evt] * width + 40; // Add a small margin
 
-            double top = ((ev.Start.TimeOfDay - _dayStart).TotalMinutes / totalMinutes) * finalSize.Height;
-            double height = ((ev.End - ev.Start).TotalMinutes / totalMinutes) * finalSize.Height;
-            double left = columns[ev] * width + 40; // Add a small margin
-
-            child.Measure(new Size(width, height));
-            child.Arrange(new Rect(left, top, width, height));
+            elem.Measure(new Size(width, height));
+            elem.Arrange(new Rect(left, top, width, height));
         }
 
         return finalSize;

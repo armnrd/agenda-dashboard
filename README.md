@@ -43,12 +43,12 @@ A lightweight desktop widget that displays your daily schedule and tasks directl
    - Create a new project or select an existing one.
    - Enable the Google Calendar API.
    - Create credentials (OAuth 2.0 Client ID).
-   - Download the credentials JSON file and save it as `gcal_credentials.json` in the same directory as the executable.
+   - Download the credentials JSON file and save it as `credentials_gcal.json` in the same directory as the executable.
 
 2. **Todoist API Setup**:
    - Go to [Todoist App Management](https://todoist.com/app_console).
    - Create a new app to get your API token.
-   - Copy your API token and save it in a file named `todoist_credentials.json` in the same directory as the executable. It should look like this:
+   - Copy your API token and save it in a file named `credentials_todoist.json` in the same directory as the executable. It should look like this:
    ```json
    {
      "api_token": "your_todoist_api_token_here"
@@ -57,7 +57,7 @@ A lightweight desktop widget that displays your daily schedule and tasks directl
 
 3. **Application Configuration**
 
-The application uses a `settings.json` file for configuration.
+The application uses a `settings.yaml` file for configuration.
 
 ```json
 {

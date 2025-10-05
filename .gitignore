@@ -5,6 +5,7 @@ obj/
 riderModule.iml
 /_ReSharper.Caches/
 /AgendaDashboard.sln.DotSettings.user
-/todoist_credentials.json
-/gcal_credentials.json
 /DRAFT_README.md
+/credentials_todoist.json
+/credentials_gcal.json
+/credentials_carddav.json

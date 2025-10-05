@@ -13,6 +13,6 @@ public partial class TodoistView : UserControl
 
     private void RefreshButton_Click(object sender, RoutedEventArgs e)
     {
-        (DataContext as TodoistViewModel)?.SafeLoadTodoistTasks();
+        (DataContext as TodoistViewModel).RefreshAsync();
     }
 }

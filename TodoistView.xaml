@@ -6,7 +6,8 @@
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              xmlns:local="clr-namespace:AgendaDashboard"
              mc:Ignorable="d"
-             d:DesignHeight="800" d:DesignWidth="300">
+             d:DesignHeight="800" d:DesignWidth="300"
+             d:DataContext="{d:DesignInstance local:TodoistViewModel, IsDesignTimeCreatable=True}">
     <UserControl.Resources>
         <local:AddValueConverter x:Key="TaskWidthAdjustment" Addend="-21" />
         <local:OrBooleanToVisibilityConverter x:Key="PanelButtonVisibility" />

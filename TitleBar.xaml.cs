@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Shell;
 
@@ -7,7 +6,7 @@ namespace AgendaDashboard;
 
 public partial class TitleBar : UserControl
 {
-    public GcalViewModel GcalViewModel { get; set; }
+    public CalendarViewModel CalendarViewModel { get; set; }
     public TodoistViewModel TodoistViewModel { get; set; }
 
     public TitleBar()
@@ -47,8 +46,8 @@ public partial class TitleBar : UserControl
 
     private void RefreshMenuItem_Click(object sender, RoutedEventArgs e)
     {
-        GcalViewModel?.SafeLoadGcalEvents();
-        TodoistViewModel?.SafeLoadTodoistTasks();
+        CalendarViewModel.RefreshAsync();
+        TodoistViewModel.RefreshAsync();
     }
 
     private void LockMenuItem_Checked(object sender, RoutedEventArgs e)

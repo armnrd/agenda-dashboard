@@ -1,82 +1,58 @@
-﻿using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Diagnostics;
+﻿using System.ComponentModel;
 using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Windows;
-using System.Windows.Threading;
+using YamlDotNet.RepresentationModel;
 
 namespace AgendaDashboard;
 
-public class TodoistTask
-{
-    public string Id { get; set; }
-    public string Content { get; set; }
-    public DateTime? DueDate { get; set; }
-    public bool Checked { get; set; }
-    public short DayOrder { get; set; }
-    public short ChildOrder { get; set; }
-}
-
 public class TodoistViewModel : INotifyPropertyChanged
 {
-    private string _apiToken;
-
-    public ObservableCollection<TodoistTask> TodoistTasks { get; set; } = new();
+    public List<TodoistTask> TodoistTasks { get; private set; } = [];
+    private readonly HttpClient _client;
+    private readonly string? _query;
 
     public TodoistViewModel()
     {
-        // Extract credentials from todoist_credentials.json
-        var credentials = JsonDocument.Parse(File.ReadAllText("todoist_credentials.json"));
-        _apiToken = credentials.RootElement.GetProperty("api-token").GetString();
+        // Get settings from ConfigMgr TODO: error handling
+        var config = (Application.Current as App).ConfigMgr.Config["todoist"];
+        var refreshInterval = double.Parse(((YamlScalarNode)config["refresh interval"]).Value);
+        _query = ((YamlScalarNode)config["query"]).Value;
 
-        // Load settings from settings.json
-        var settings = JsonDocument.Parse(File.ReadAllText("settings.json"));
-
-        // Get the refresh interval
-        var refreshInterval = settings.RootElement
-            .GetProperty("todoist")
-            .GetProperty("refresh-interval").GetInt32();
+        // Set up client
+        var credentials = JsonDocument.Parse(File.ReadAllText("credentials_todoist.json"));
+        var apiToken = credentials.RootElement.GetProperty("api-token").GetString();
+        _client = new HttpClient();
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiToken);
 
         // Set up a timer to refresh the tasks model
-        var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(refreshInterval) };
-        timer.Tick += async (s, e) => { SafeLoadTodoistTasks(); };
+        var timer = new System.Timers.Timer(refreshInterval * 1000);
+        timer.Elapsed += async (s, e) => { await RefreshAsync(); };
         timer.Start();
 
-        // Load tasks immediately on startup
-        SafeLoadTodoistTasks();
-    }
-
-    public void SafeLoadTodoistTasks()
-    {
-        LoadTodoistTasksAsync().ContinueWith(t =>
+        // Set a timer to wait for App.NotifMgr to become available and immediately call RefreshAsync()
+        var initTimer = new System.Timers.Timer(500);
+        initTimer.Elapsed += async (s, e) =>
         {
-            if (t.IsFaulted)
+            if ((Application.Current as App).NotifMgr != null)
             {
-                // Show an error message if loading fails
-                (Application.Current.MainWindow as MainWindow).NM.Enqueue(
-                    $"Todoist: {t.Exception.Message}", "Error", 5);
-                // Log the exception to Trace
-                System.Diagnostics.Trace.WriteLine(
-                    $"{DateTime.Now:HH:mm:ss} - Todoist: {t.Exception.Message}");
+                initTimer.Stop();
+                await RefreshAsync();
             }
-            else
-            {
-                // Successfully loaded tasks, show a success message
-                (Application.Current.MainWindow as MainWindow).NM.Enqueue("Loaded Todoist tasks.",
-                    "Success", 2);
-            }
-        }, TaskScheduler.FromCurrentSynchronizationContext());
+        };
+        initTimer.Start();
     }
 
-    public async Task LoadTodoistTasksAsync()
+    internal async Task RefreshAsync()
     {
-        using var client = new HttpClient();
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _apiToken);
+        await Utilities.NotifExAsync(LoadTodoistTasksAsync, "Loaded Todoist tasks.");
+    }
 
-        var response = await client.GetAsync("https://api.todoist.com/api/v1/tasks/filter?query=today");
+    private async Task LoadTodoistTasksAsync()
+    {
+        var response = await _client.GetAsync($"https://api.todoist.com/api/v1/tasks/filter?query={_query}");
         response.EnsureSuccessStatusCode();
 
         var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
@@ -110,18 +86,23 @@ public class TodoistViewModel : INotifyPropertyChanged
             return x.DayOrder.CompareTo(y.DayOrder);
         });
 
-        // Update the TodoistTasks collection from within the UI thread
-        Application.Current.Dispatcher.Invoke(() =>
+        // Replace model and notify property change on Dispatcher
+        await App.Current.Dispatcher.InvokeAsync(() =>
         {
-            TodoistTasks.Clear();
-            // Populate TodoistTasks with the new tasks
-            foreach (var todoistTask in todoistTasksNew)
-                TodoistTasks.Add(todoistTask);
+            TodoistTasks = todoistTasksNew;
+            PropertyChanged(this, new PropertyChangedEventArgs(nameof(TodoistTasks)));
         });
     }
 
-    protected void OnPropertyChanged(string propertyName) =>
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-
     public event PropertyChangedEventHandler PropertyChanged;
+}
+
+public class TodoistTask
+{
+    public string Id { get; set; }
+    public string Content { get; set; }
+    public DateTime? DueDate { get; set; }
+    public bool Checked { get; set; }
+    public short DayOrder { get; set; }
+    public short ChildOrder { get; set; }
 }

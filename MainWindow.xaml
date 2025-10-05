@@ -20,7 +20,7 @@
 
         <local:TitleBar x:Name="TitleBar" Grid.Row="0" />
 
-        <local:GcalView x:Name="GcalView" Grid.Row="1" />
+        <local:CalendarView x:Name="GcalView" Grid.Row="1" />
 
         <GridSplitter Grid.Row="2" Height="6" HorizontalAlignment="Stretch" VerticalAlignment="Center"
                       Background="#EEE" ShowsPreview="True" />
