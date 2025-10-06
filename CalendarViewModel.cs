@@ -202,8 +202,8 @@ public class CalendarViewModel : INotifyPropertyChanged
 
         // Parse vCard data from response
         var xdoc = XDocument.Parse(responseXml);
-        XNamespace card = "urn:ietf:params:xml:ns:carddav";
-        var vCardStrs = xdoc.Descendants(card + "address-data").Select(x => x.Value);
+        XNamespace cardns = "urn:ietf:params:xml:ns:carddav";
+        var vCardStrs = xdoc.Descendants(cardns + "address-data").Select(x => x.Value);
         var vCardStrsCombined = string.Join("\n", vCardStrs);
         var tr = new StringReader(vCardStrsCombined);
         var vCards = SimpleDeserializer.Default.Deserialize(tr); // Parse vCard string
