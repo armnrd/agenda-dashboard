@@ -5,10 +5,10 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
-using System.Windows;
 using System.Windows.Media;
 using System.Windows.Threading;
 using System.Xml.Linq;
+using AgendaDashboard.Utilities;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Calendar.v3;
 using Google.Apis.Services;
@@ -17,7 +17,7 @@ using vCard.Net.CardComponents;
 using vCard.Net.Serialization;
 using YamlDotNet.RepresentationModel;
 
-namespace AgendaDashboard;
+namespace AgendaDashboard.ViewModels;
 
 public class CalendarViewModel : INotifyPropertyChanged
 {
@@ -35,14 +35,14 @@ public class CalendarViewModel : INotifyPropertyChanged
         TargetDate = DateTime.Now.Date;
 
         // Get Google Calendar settings from ConfigMgr
-        var configGcal = (Application.Current as App).ConfigMgr.Config["google calendar"];
+        var configGcal = App.Current.ConfigMgr.Config["google calendar"];
         var refreshIntervalGCal = double.Parse(((YamlScalarNode)configGcal["refresh interval"]).Value);
         _selectedIds = ((YamlSequenceNode)configGcal["selected ids"]).Children
             .OfType<YamlScalarNode>()
             .Select(node => node.Value);
 
         // Get CardDAV settings from ConfigMgr
-        var configCardDav = (Application.Current as App).ConfigMgr.Config["carddav"];
+        var configCardDav = App.Current.ConfigMgr.Config["carddav"];
         var refreshIntervalCardDav = double.Parse(((YamlScalarNode)configCardDav["refresh interval"]).Value);
         _urlCardDav = ((YamlScalarNode)configCardDav["url"]).Value;
 
@@ -84,7 +84,7 @@ public class CalendarViewModel : INotifyPropertyChanged
         timerGCal.Tick += async (s, e) =>
         {
             ResetTargetDate(); // Reset target date to today before loading events
-            await Utilities.NotifExAsync(LoadGcalEventsAsync, "Loaded Google Calendar events.");
+            await Functions.NotifExAsync(LoadGcalEventsAsync, "Loaded Google Calendar events.");
         };
         timerGCal.Start();
 
@@ -92,7 +92,7 @@ public class CalendarViewModel : INotifyPropertyChanged
         var timerCardDav = new DispatcherTimer { Interval = TimeSpan.FromSeconds(refreshIntervalCardDav) };
         timerCardDav.Tick += async (s, e) =>
         {
-            await Utilities.NotifExAsync(LoadCardDavEventsAsync, "Loaded CardDAV dates.");
+            await Functions.NotifExAsync(LoadCardDavEventsAsync, "Loaded CardDAV dates.");
         };
         timerCardDav.Start();
 
@@ -101,7 +101,7 @@ public class CalendarViewModel : INotifyPropertyChanged
         var initTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
         initTimer.Tick += async (s, e) =>
         {
-            if ((Application.Current as App).NotifMgr != null && _serviceGcal != null)
+            if (App.Current.NotifMgr != null && _serviceGcal != null)
             {
                 initTimer.Stop();
                 await RefreshAsync();
@@ -113,8 +113,8 @@ public class CalendarViewModel : INotifyPropertyChanged
     internal async Task RefreshAsync()
     {
         await Task.WhenAll(
-            Utilities.NotifExAsync(LoadGcalEventsAsync, "Loaded Google Calendar events."),
-            Utilities.NotifExAsync(LoadCardDavEventsAsync, "Loaded CardDAV dates."));
+            Functions.NotifExAsync(LoadGcalEventsAsync, "Loaded Google Calendar events."),
+            Functions.NotifExAsync(LoadCardDavEventsAsync, "Loaded CardDAV dates."));
     }
 
     internal void DecrementTargetDate()

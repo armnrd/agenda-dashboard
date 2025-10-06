@@ -3,7 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:AgendaDashboard"
+        xmlns:views="clr-namespace:AgendaDashboard.Views"
+        xmlns:controls="clr-namespace:AgendaDashboard.Controls"
         mc:Ignorable="d"
         Title="Agenda Dashboard"
         Width="416" Height="832"
@@ -18,14 +19,14 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <local:TitleBar x:Name="TitleBar" Grid.Row="0" />
+        <controls:TitleBar x:Name="TitleBar" Grid.Row="0" />
 
-        <local:CalendarView x:Name="GcalView" Grid.Row="1" />
+        <views:CalendarView x:Name="GcalView" Grid.Row="1" />
 
         <GridSplitter Grid.Row="2" Height="6" HorizontalAlignment="Stretch" VerticalAlignment="Center"
                       Background="#EEE" ShowsPreview="True" />
 
-        <local:TodoistView x:Name="TodoistView" Grid.Row="3" />
+        <views:TodoistView x:Name="TodoistView" Grid.Row="3" />
 
         <StatusBar Height="24" Grid.Row="4">
             <StatusBar.ItemsPanel>

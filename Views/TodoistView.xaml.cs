@@ -1,7 +1,8 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
+using AgendaDashboard.ViewModels;
 
-namespace AgendaDashboard;
+namespace AgendaDashboard.Views;
 
 public partial class TodoistView : UserControl
 {

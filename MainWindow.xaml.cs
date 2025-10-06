@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using AgendaDashboard.ViewModels;
 using YamlDotNet.RepresentationModel;
 
 namespace AgendaDashboard;
@@ -24,7 +25,7 @@ public partial class MainWindow : Window
         base.OnSourceInitialized(e);
 
         // Set the initial window position from settings
-        var config = (Application.Current as App).ConfigMgr.Config;
+        var config = App.Current.ConfigMgr.Config;
         Left = double.Parse(((YamlScalarNode)config["general"]["x position"]).Value) - 4; // Offset by 4px because of the title bar
         Top = double.Parse(((YamlScalarNode)config["general"]["y position"]).Value) - 4; // Same here
 

@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 
-namespace AgendaDashboard;
+namespace AgendaDashboard.Views;
 
 public partial class GcalForm : Window
 {

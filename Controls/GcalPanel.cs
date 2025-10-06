@@ -2,8 +2,9 @@
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Threading;
+using AgendaDashboard.ViewModels;
 
-namespace AgendaDashboard;
+namespace AgendaDashboard.Controls;
 
 public class GcalPanel : Panel
 {

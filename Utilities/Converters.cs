@@ -2,7 +2,7 @@
 using System.Windows;
 using System.Windows.Data;
 
-namespace AgendaDashboard;
+namespace AgendaDashboard.Utilities;
 
 // AddValueConverter is a value converter that adds a specified value to the input.
 public class AddValueConverter : IValueConverter

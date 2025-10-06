@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Windows;
+using AgendaDashboard.Managers;
 
 namespace AgendaDashboard;
 
@@ -10,6 +11,7 @@ public partial class App : Application
 {
     public NotifMgr NotifMgr { get; private set; }
     public ConfigMgr ConfigMgr { get; private set; }
+    public new static App Current => Application.Current as App;
 
     protected override void OnStartup(StartupEventArgs e)
     {

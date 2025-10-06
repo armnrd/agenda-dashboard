@@ -1,7 +1,6 @@
-﻿using System.Windows;
-using System.Windows.Threading;
+﻿using System.Windows.Threading;
 
-namespace AgendaDashboard;
+namespace AgendaDashboard.Managers;
 
 public class NotifMgr(Action<string, string> _notifAction)
 {
@@ -24,13 +23,13 @@ public class NotifMgr(Action<string, string> _notifAction)
     {
         if (_queue.Count == 0)
         {
-            Application.Current.Dispatcher.InvokeAsync(() => _action("", "Ready")); // Clear status bar
+            App.Current.Dispatcher.InvokeAsync(() => _action("", "Ready")); // Clear status bar
             _isShowing = false;
             return;
         }
 
         var (message, status, duration) = _queue.Dequeue();
-        Application.Current.Dispatcher.InvokeAsync(() => _action(message, status)); // Show the message
+        App.Current.Dispatcher.InvokeAsync(() => _action(message, status)); // Show the message
         _isShowing = true;
 
         // Start a timer to show the next notification after duration seconds

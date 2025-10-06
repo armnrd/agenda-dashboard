@@ -3,10 +3,10 @@ using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
-using System.Windows;
+using AgendaDashboard.Utilities;
 using YamlDotNet.RepresentationModel;
 
-namespace AgendaDashboard;
+namespace AgendaDashboard.ViewModels;
 
 public class TodoistViewModel : INotifyPropertyChanged
 {
@@ -17,7 +17,7 @@ public class TodoistViewModel : INotifyPropertyChanged
     public TodoistViewModel()
     {
         // Get settings from ConfigMgr TODO: error handling
-        var config = (Application.Current as App).ConfigMgr.Config["todoist"];
+        var config = App.Current.ConfigMgr.Config["todoist"];
         var refreshInterval = double.Parse(((YamlScalarNode)config["refresh interval"]).Value);
         _query = ((YamlScalarNode)config["query"]).Value;
 
@@ -36,7 +36,7 @@ public class TodoistViewModel : INotifyPropertyChanged
         var initTimer = new System.Timers.Timer(500);
         initTimer.Elapsed += async (s, e) =>
         {
-            if ((Application.Current as App).NotifMgr != null)
+            if (App.Current.NotifMgr != null)
             {
                 initTimer.Stop();
                 await RefreshAsync();
@@ -47,7 +47,7 @@ public class TodoistViewModel : INotifyPropertyChanged
 
     internal async Task RefreshAsync()
     {
-        await Utilities.NotifExAsync(LoadTodoistTasksAsync, "Loaded Todoist tasks.");
+        await Functions.NotifExAsync(LoadTodoistTasksAsync, "Loaded Todoist tasks.");
     }
 
     private async Task LoadTodoistTasksAsync()

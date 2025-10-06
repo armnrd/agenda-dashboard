@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using YamlDotNet.RepresentationModel;
 
-namespace AgendaDashboard;
+namespace AgendaDashboard.Managers;
 
 public class ConfigMgr
 {

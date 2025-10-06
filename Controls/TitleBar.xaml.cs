@@ -1,8 +1,9 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Shell;
+using AgendaDashboard.ViewModels;
 
-namespace AgendaDashboard;
+namespace AgendaDashboard.Controls;
 
 public partial class TitleBar : UserControl
 {
@@ -72,6 +73,6 @@ public partial class TitleBar : UserControl
 
     private void ExitMenuItem_Click(object sender, RoutedEventArgs e)
     {
-        Application.Current.Shutdown();
+        App.Current.Shutdown();
     }
 }
