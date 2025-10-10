@@ -1,6 +1,9 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics;
+using System.DirectoryServices.ActiveDirectory;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
@@ -14,6 +17,8 @@ namespace AgendaDashboard;
 /// </summary>
 public partial class MainWindow : Window
 {
+    private bool _raised;
+
     public MainWindow()
     {
         InitializeComponent();
@@ -26,19 +31,35 @@ public partial class MainWindow : Window
 
         // Set the initial window position from settings
         var config = App.Current.ConfigMgr.Config;
-        Left = double.Parse(((YamlScalarNode)config["general"]["x position"]).Value) - 4; // Offset by 4px because of the title bar
+        Left = double.Parse(((YamlScalarNode)config["general"]["x position"]).Value) -
+               4; // Offset by 4px because of the title bar
         Top = double.Parse(((YamlScalarNode)config["general"]["y position"]).Value) - 4; // Same here
 
         var hwnd = new WindowInteropHelper(this).Handle;
-        
+
         // Make the window a tool window: doesn't show up in taskbar or alt-tab switcher
         const int GWLP_EXSTYLE = -20; // Extended window styles
         const int WS_EX_TOOLWINDOW = 0x00000080, WS_EX_APPWINDOW = 0x00040000;
         int exStyle = GetWindowLongPtr(hwnd, GWLP_EXSTYLE);
+
         // Add TOOLWINDOW, remove APPWINDOW from the extended styles
         exStyle |= WS_EX_TOOLWINDOW;
         exStyle &= ~WS_EX_APPWINDOW;
         SetWindowLongPtr(hwnd, GWLP_EXSTYLE, exStyle);
+    }
+
+    internal void ToggleRaise(object sender, EventArgs e)
+    {
+        if (_raised)
+        {
+            Drop();
+            _raised = false;
+        }
+        else
+        {
+            Raise();
+            _raised = true;
+        }
     }
 
     internal void ShowNotification(string message, string? status)
@@ -81,6 +102,28 @@ public partial class MainWindow : Window
                 // StatusBarMessageTransform.BeginAnimation(TranslateTransform.XProperty,
                 // animation); // TODO: fix this - status message is truncated
             };
+
+        // Drop the window to the bottom of the z-order
+        Drop();
+        _raised = false;
+    }
+
+    private void Raise()
+    {
+        // Raise the window to the top of the z-order
+        var hwnd = new WindowInteropHelper(this).Handle;
+        const int HWND_TOPMOST = -1;
+        const int SWP_NOSIZE = 0x0001, SWP_NOMOVE = 0x0002, SWP_NOACTIVATE = 0x0010;
+        SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE);
+    }
+
+    private void Drop()
+    {
+        // Drop the window to the bottom of the z-order
+        var hwnd = new WindowInteropHelper(this).Handle;
+        const int HWND_BOTTOM = 1;
+        const int SWP_NOSIZE = 0x0001, SWP_NOMOVE = 0x0002, SWP_NOACTIVATE = 0x0010;
+        SetWindowPos(hwnd, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE);
     }
 
     [DllImport("user32.dll")]
@@ -88,4 +131,8 @@ public partial class MainWindow : Window
 
     [DllImport("user32.dll")]
     private static extern int SetWindowLongPtr(IntPtr hWnd, int nIndex, int dwNewLong);
+
+    [DllImport("user32.dll")]
+    private static extern int SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy,
+        uint uFlags);
 }
