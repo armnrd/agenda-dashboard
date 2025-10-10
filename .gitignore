@@ -1,9 +1,8 @@
 bin/
 obj/
-/packages/
 .vs/
-riderModule.iml
 /_ReSharper.Caches/
+riderModule.iml
 /AgendaDashboard.sln.DotSettings.user
 /DRAFT_README.md
 /credentials_todoist.json
