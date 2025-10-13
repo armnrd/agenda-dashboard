@@ -6,6 +6,7 @@
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              xmlns:controls="clr-namespace:AgendaDashboard.Controls"
              xmlns:viewModels="clr-namespace:AgendaDashboard.ViewModels"
+             xmlns:views="clr-namespace:AgendaDashboard.Views"
              xmlns:utilities="clr-namespace:AgendaDashboard.Utilities"
              mc:Ignorable="d"
              d:DesignHeight="800" d:DesignWidth="300"
@@ -65,18 +66,19 @@
         </Style>
     </UserControl.Resources>
     <Grid>
-        <ScrollViewer x:Name="ScrollViewer" VerticalScrollBarVisibility="Visible">
+        <ScrollViewer x:Name="GcalScrollViewer"
+                      VerticalScrollBarVisibility="Visible">
             <ItemsControl ItemsSource="{Binding GcalEvents}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <controls:GcalPanel Height="1600" />
+                        <controls:CalendarPanel Height="1600" />
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <Border Background="{Binding CalendarColor}"
                                 CornerRadius="4"
-                                Margin="2"
+                                Margin="0, 0, 4, 4"
                                 Padding="4"
                                 HorizontalAlignment="Stretch">
                             <Border.Effect>
@@ -99,12 +101,12 @@
             </ItemsControl>
         </ScrollViewer>
 
-        <ItemsControl ItemsSource="{Binding DateMessages}"
+        <ItemsControl ItemsSource="{Binding DateLines}"
                       HorizontalAlignment="Stretch" VerticalAlignment="Top"
-                      Margin="0,0,18,0">
+                      Margin="{x:Static views:CalendarView.DateLinesMargin}">
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                    <Border Background="Gray" CornerRadius="4" Margin="4" Padding="6">
+                    <Border Background="Gray" CornerRadius="0" Padding="6">
                         <TextBlock Text="{Binding}" Foreground="White" FontWeight="Bold" FontSize="12" />
                     </Border>
                 </DataTemplate>
@@ -126,7 +128,7 @@
             </Button.Content>
             <Button.Visibility>
                 <MultiBinding Converter="{StaticResource PanelButtonVisibility}">
-                    <Binding ElementName="ScrollViewer" Path="IsMouseOver" />
+                    <Binding ElementName="GcalScrollViewer" Path="IsMouseOver" />
                     <Binding ElementName="PreviousDayButton" Path="IsMouseOver" />
                     <Binding ElementName="CurrentDayButton" Path="IsMouseOver" />
                     <Binding ElementName="NextDayButton" Path="IsMouseOver" />
@@ -150,7 +152,7 @@
             </Button.Content>
             <Button.Visibility>
                 <MultiBinding Converter="{StaticResource PanelButtonVisibility}">
-                    <Binding ElementName="ScrollViewer" Path="IsMouseOver" />
+                    <Binding ElementName="GcalScrollViewer" Path="IsMouseOver" />
                     <Binding ElementName="PreviousDayButton" Path="IsMouseOver" />
                     <Binding ElementName="CurrentDayButton" Path="IsMouseOver" />
                     <Binding ElementName="NextDayButton" Path="IsMouseOver" />
@@ -174,7 +176,7 @@
             </Button.Content>
             <Button.Visibility>
                 <MultiBinding Converter="{StaticResource PanelButtonVisibility}">
-                    <Binding ElementName="ScrollViewer" Path="IsMouseOver" />
+                    <Binding ElementName="GcalScrollViewer" Path="IsMouseOver" />
                     <Binding ElementName="PreviousDayButton" Path="IsMouseOver" />
                     <Binding ElementName="CurrentDayButton" Path="IsMouseOver" />
                     <Binding ElementName="NextDayButton" Path="IsMouseOver" />
@@ -198,7 +200,7 @@
             </Button.Content>
             <Button.Visibility>
                 <MultiBinding Converter="{StaticResource PanelButtonVisibility}">
-                    <Binding ElementName="ScrollViewer" Path="IsMouseOver" />
+                    <Binding ElementName="GcalScrollViewer" Path="IsMouseOver" />
                     <Binding ElementName="PreviousDayButton" Path="IsMouseOver" />
                     <Binding ElementName="CurrentDayButton" Path="IsMouseOver" />
                     <Binding ElementName="NextDayButton" Path="IsMouseOver" />

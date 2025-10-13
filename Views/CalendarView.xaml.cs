@@ -7,6 +7,13 @@ namespace AgendaDashboard.Views;
 
 public partial class CalendarView : UserControl
 {
+    public const double LeftMargin = 4;
+    public const double RightMargin = 10;
+    public const double DateLabelOffset = 40;
+    public const double EventCardsRightOffset = 46; // Offset matches end of date line
+    public static readonly Thickness DateLinesMargin = new(DateLabelOffset, 0, 27, 0);
+    // Right margin matches end of date line
+
     public CalendarView()
     {
         InitializeComponent();
@@ -17,40 +24,40 @@ public partial class CalendarView : UserControl
     private void CalendarView_Loaded(object sender, RoutedEventArgs e)
     {
         // Scroll to the current time on load
-        ScrollViewer.ScrollToVerticalOffset(
-            (DateTime.Now.TimeOfDay.TotalMinutes / 1440) * ScrollViewer.ScrollableHeight); // 1440 minutes in a day
+        GcalScrollViewer.ScrollToVerticalOffset(
+            (DateTime.Now.TimeOfDay.TotalMinutes / 1440) * GcalScrollViewer.ScrollableHeight); // 1440 minutes in a day
 
         // Scroll to the current time line every 60 seconds
         var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(60) };
         timer.Tick += (s, args) =>
         {
-            ScrollViewer.ScrollToVerticalOffset((DateTime.Now.TimeOfDay.TotalMinutes / 1440) *
-                                                ScrollViewer.ScrollableHeight); // 1440 minutes in a day
+            GcalScrollViewer.ScrollToVerticalOffset((DateTime.Now.TimeOfDay.TotalMinutes / 1440) *
+                                                    GcalScrollViewer.ScrollableHeight); // 1440 minutes in a day
         };
         timer.Start();
     }
-    
+
     private void PreviousDayButton_Click(object sender, RoutedEventArgs e)
     {
         var viewModel = DataContext as CalendarViewModel;
         viewModel.DecrementTargetDate();
         viewModel.RefreshAsync();
     }
-    
+
     private void CurrentDayButton_Click(object sender, RoutedEventArgs e)
     {
         var viewModel = DataContext as CalendarViewModel;
         viewModel.ResetTargetDate();
         viewModel.RefreshAsync();
     }
-    
+
     private void NextDayButton_Click(object sender, RoutedEventArgs e)
     {
         var viewModel = DataContext as CalendarViewModel;
         viewModel.IncrementTargetDate();
         viewModel.RefreshAsync();
     }
-    
+
     private void RefreshButton_Click(object sender, RoutedEventArgs e)
     {
         (DataContext as CalendarViewModel).RefreshAsync();

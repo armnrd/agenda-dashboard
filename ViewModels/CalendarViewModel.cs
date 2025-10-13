@@ -5,10 +5,12 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using System.Windows;
 using System.Windows.Media;
 using System.Windows.Threading;
 using System.Xml.Linq;
 using AgendaDashboard.Utilities;
+using AgendaDashboard.Views;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Calendar.v3;
 using Google.Apis.Services;
@@ -21,9 +23,9 @@ namespace AgendaDashboard.ViewModels;
 
 public class CalendarViewModel : INotifyPropertyChanged
 {
-    public List<GcalEvent> GcalEvents { get; set; } = [];
-    public List<string> DateMessages { get; set; } = [];
-    public DateTime TargetDate;
+    public List<GcalEvent> GcalEvents { get; set; }
+    public List<string> DateLines { get; set; }
+    private DateTime _targetDate;
     private readonly IEnumerable<string?>? _selectedIds;
     private CalendarService? _serviceGcal;
     private readonly HttpClient _clientCardDav;
@@ -31,8 +33,11 @@ public class CalendarViewModel : INotifyPropertyChanged
 
     public CalendarViewModel()
     {
+        GcalEvents = [];
+        DateLines = [];
+
         // Initialize the target date to today
-        TargetDate = DateTime.Now.Date;
+        _targetDate = DateTime.Now.Date;
 
         // Get Google Calendar settings from ConfigMgr
         var configGcal = App.Current.ConfigMgr.Config["google calendar"];
@@ -84,7 +89,7 @@ public class CalendarViewModel : INotifyPropertyChanged
         timerGCal.Tick += async (s, e) =>
         {
             ResetTargetDate(); // Reset target date to today before loading events
-            await Functions.NotifExAsync(LoadGcalEventsAsync, "Loaded Google Calendar events.");
+            SafeLoadGcalEventsAsync();
         };
         timerGCal.Start();
 
@@ -92,7 +97,8 @@ public class CalendarViewModel : INotifyPropertyChanged
         var timerCardDav = new DispatcherTimer { Interval = TimeSpan.FromSeconds(refreshIntervalCardDav) };
         timerCardDav.Tick += async (s, e) =>
         {
-            await Functions.NotifExAsync(LoadCardDavEventsAsync, "Loaded CardDAV dates.");
+            ResetTargetDate(); // Reset target date to today before loading events
+            SafeLoadCardDavEventsAsync();
         };
         timerCardDav.Start();
 
@@ -112,24 +118,22 @@ public class CalendarViewModel : INotifyPropertyChanged
 
     internal async Task RefreshAsync()
     {
-        await Task.WhenAll(
-            Functions.NotifExAsync(LoadGcalEventsAsync, "Loaded Google Calendar events."),
-            Functions.NotifExAsync(LoadCardDavEventsAsync, "Loaded CardDAV dates."));
+        await Task.WhenAll(SafeLoadCardDavEventsAsync(), SafeLoadGcalEventsAsync());
     }
 
     internal void DecrementTargetDate()
     {
-        TargetDate = TargetDate.AddDays(-1);
-    }
-
-    internal void ResetTargetDate()
-    {
-        TargetDate = DateTime.Now.Date;
+        _targetDate = _targetDate.AddDays(-1);
     }
 
     internal void IncrementTargetDate()
     {
-        TargetDate = TargetDate.AddDays(1);
+        _targetDate = _targetDate.AddDays(1);
+    }
+
+    internal void ResetTargetDate()
+    {
+        _targetDate = DateTime.Now.Date;
     }
 
     private async Task LoadGcalEventsAsync()
@@ -148,8 +152,8 @@ public class CalendarViewModel : INotifyPropertyChanged
 
             // Define parameters of request
             var request = _serviceGcal.Events.List(calendar.Id);
-            request.TimeMin = TargetDate;
-            request.TimeMax = TargetDate.AddDays(1);
+            request.TimeMin = _targetDate;
+            request.TimeMax = _targetDate.AddDays(1);
             request.ShowDeleted = false;
             request.SingleEvents = true;
             request.OrderBy = EventsResource.ListRequest.OrderByEnum.StartTime;
@@ -176,6 +180,11 @@ public class CalendarViewModel : INotifyPropertyChanged
             GcalEvents = gcalEventsNew;
             PropertyChanged(this, new PropertyChangedEventArgs(nameof(GcalEvents)));
         });
+    }
+
+    private async Task SafeLoadGcalEventsAsync()
+    {
+        await Functions.NotifExAsync(LoadGcalEventsAsync, "Loaded Google Calendar events.");
     }
 
     private async Task LoadCardDavEventsAsync()
@@ -208,27 +217,35 @@ public class CalendarViewModel : INotifyPropertyChanged
         var tr = new StringReader(vCardStrsCombined);
         var vCards = SimpleDeserializer.Default.Deserialize(tr); // Parse vCard string
 
-        var dateMessagesNew = new List<string>();
+        // Create a new date lines list and insert the target date as the first line
+        var dateLinesNew = new List<string>();
+        dateLinesNew.Add($"{_targetDate:D}");
+
         foreach (VCard vCard in vCards)
         {
             if (!DateTime.TryParseExact(vCard.Birthdate, ["yyyyMMdd", "yyyy-MM-dd"], null, DateTimeStyles.None,
                     out var bd))
                 continue;
 
-            // Check if birth date in vCard matches TargetDate
-            if (bd.Month == TargetDate.Month && bd.Day == TargetDate.Day)
+            // Check if birthdate in vCard matches TargetDate
+            if (bd.Month == _targetDate.Month && bd.Day == _targetDate.Day)
             {
-                dateMessagesNew.Add(
-                    $"{vCard.FormattedName}'s {YearDiffToOrdinal(bd, TargetDate)} birthday: {bd.ToShortDateString()}");
+                dateLinesNew.Add(
+                    $"{vCard.FormattedName}'s {YearDiffToOrdinal(bd, _targetDate)} birthday: {bd.ToShortDateString()}");
             }
         }
 
         // Replace model and notify property change
         await App.Current.Dispatcher.InvokeAsync(() =>
         {
-            DateMessages = dateMessagesNew;
-            PropertyChanged(this, new PropertyChangedEventArgs(nameof(DateMessages)));
+            DateLines = dateLinesNew;
+            PropertyChanged(this, new PropertyChangedEventArgs(nameof(DateLines)));
         });
+    }
+
+    private async Task SafeLoadCardDavEventsAsync()
+    {
+        Functions.NotifExAsync(LoadCardDavEventsAsync, "Loaded CardDAV event dates.");
     }
 
     private static string YearDiffToOrdinal(DateTime start, DateTime end)
