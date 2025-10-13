@@ -1,44 +1,53 @@
-﻿using System.Windows.Threading;
+﻿using System.Windows;
+using System.Windows.Threading;
 
 namespace AgendaDashboard.Managers;
 
-public class NotifMgr(Action<string, string> _notifAction)
+public class NotifMgr
 {
-    private readonly Queue<(string message, string status, double duration)> _queue = [];
-
-    private bool _isShowing;
-
+    private readonly Action<string, string> _showMsgAction;
+    private readonly DispatcherTimer _msgTimer;
     // (message, status)
-    private readonly Action<string, string> _action = _notifAction ?? throw new ArgumentNullException(
-        nameof(_notifAction), "Notification action cannot be null.");
+    private readonly Queue<(string message, string status)> _msgQueue;
+    private bool _statusBarEmpty;
 
-    public void Enqueue(string message, string status, double duration = 2)
+    public NotifMgr(Action<string, string> showMsgAction)
     {
-        _queue.Enqueue((message, status, duration));
-        if (!_isShowing)
-            ShowNext();
+        _showMsgAction = showMsgAction ?? throw new ArgumentNullException(nameof(showMsgAction),
+            "Notification action cannot be null.");
+
+        // Start a timer that shows messages every two seconds
+        _msgTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
+        _msgTimer.Tick += (s, e) => ShowNextMessage();
+        _msgTimer.Start();
+
+        _msgQueue = [];
+        _statusBarEmpty = true;
     }
 
-    private void ShowNext()
+    public void QueueMessage(string message, string status)
     {
-        if (_queue.Count == 0)
+        _msgQueue.Enqueue((message, status));
+        if (_statusBarEmpty) // Show the message immediately if the status bar is empty
         {
-            App.Current.Dispatcher.InvokeAsync(() => _action("", "Ready")); // Clear status bar
-            _isShowing = false;
-            return;
+            Application.Current.Dispatcher.InvokeAsync(ShowNextMessage, DispatcherPriority.Normal);
+            _statusBarEmpty = false;
+            // Reset the timer
+            _msgTimer.Stop();
+            _msgTimer.Start();
+        }
+    }
+
+    private void ShowNextMessage()
+    {
+        if (_msgQueue.Count == 0)
+        {
+            // Queue a "ready" status message
+            _msgQueue.Enqueue(("", "Ready"));
+            _statusBarEmpty = true;
         }
 
-        var (message, status, duration) = _queue.Dequeue();
-        App.Current.Dispatcher.InvokeAsync(() => _action(message, status)); // Show the message
-        _isShowing = true;
-
-        // Start a timer to show the next notification after duration seconds
-        var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(duration) };
-        timer.Tick += (s, e) =>
-        {
-            timer.Stop();
-            ShowNext(); // Show the next notification in the queue
-        };
-        timer.Start();
+        var (message, status) = _msgQueue.Dequeue();
+        _showMsgAction(message, status); // Show the message
     }
 }

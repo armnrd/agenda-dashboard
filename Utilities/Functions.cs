@@ -14,12 +14,12 @@ internal static partial class Functions
         catch (Exception ex)
         {
             // Show an error message if loading fails
-            notifMgr.Enqueue($"{asyncFunc.Method.Name}(): {ex.Message}", "Error", 5);
+            notifMgr.QueueMessage($"{asyncFunc.Method.Name}(): {ex.Message}", "Error");
             Trace.WriteLine($"{asyncFunc.Method.Name}(): {ex.Message}");
             return;
         }
 
         // Successful, show success message
-        notifMgr.Enqueue(successMessage, "Success", 2);
+        notifMgr.QueueMessage(successMessage, "Success");
     }
 }
