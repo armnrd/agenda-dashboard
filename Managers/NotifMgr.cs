@@ -18,7 +18,7 @@ public class NotifMgr
 
         // Start a timer that shows messages every two seconds
         _msgTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
-        _msgTimer.Tick += (s, e) => ShowNextMessage();
+        _msgTimer.Tick += (_, _) => ShowNextMessage();
         _msgTimer.Start();
 
         _msgQueue = [];

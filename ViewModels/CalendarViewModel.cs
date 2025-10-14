@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Net.Http;
@@ -86,7 +87,7 @@ public class CalendarViewModel : INotifyPropertyChanged
 
         // Set up a timer to refresh the Google Calendar events model
         var timerGCal = new DispatcherTimer { Interval = TimeSpan.FromSeconds(refreshIntervalGCal) };
-        timerGCal.Tick += async (s, e) =>
+        timerGCal.Tick += async (_, _) =>
         {
             ResetTargetDate(); // Reset target date to today before loading events
             SafeLoadGcalEventsAsync();
@@ -95,30 +96,30 @@ public class CalendarViewModel : INotifyPropertyChanged
 
         // Set up a timer to refresh CardDAV events
         var timerCardDav = new DispatcherTimer { Interval = TimeSpan.FromSeconds(refreshIntervalCardDav) };
-        timerCardDav.Tick += async (s, e) =>
+        timerCardDav.Tick += async (_, _) =>
         {
             ResetTargetDate(); // Reset target date to today before loading events
             SafeLoadCardDavEventsAsync();
         };
         timerCardDav.Start();
 
-        // Set a timer to wait for App.NotifMgr and _serviceGCal to become available and immediately call RefreshAsync()
-        // var initTimer = new System.Timers.Timer(500);
+        // Set a timer to wait for App.NotifMgr and _serviceGCal to become available and immediately load data
         var initTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
-        initTimer.Tick += async (s, e) =>
+        initTimer.Tick += (_, _) =>
         {
             if (App.Current.NotifMgr != null && _serviceGcal != null)
             {
                 initTimer.Stop();
-                await RefreshAsync();
+                Refresh();
             }
         };
         initTimer.Start();
     }
 
-    internal async Task RefreshAsync()
+    internal void Refresh()
     {
-        await Task.WhenAll(SafeLoadCardDavEventsAsync(), SafeLoadGcalEventsAsync());
+        SafeLoadCardDavEventsAsync();
+        SafeLoadGcalEventsAsync();
     }
 
     internal void DecrementTargetDate()
@@ -140,6 +141,8 @@ public class CalendarViewModel : INotifyPropertyChanged
     {
         var calendarList = await _serviceGcal.CalendarList.List().ExecuteAsync();
         var gcalEventsNew = new List<GcalEvent>();
+        var dateLinesAdd = new List<string>();
+
         foreach (var calendar in calendarList.Items)
         {
             // Skip calendars that are not selected
@@ -161,8 +164,14 @@ public class CalendarViewModel : INotifyPropertyChanged
             // List events
             var events = await request.ExecuteAsync();
 
-            foreach (var ev in events.Items.Where(e => e.Start.DateTime.HasValue && e.End.DateTime.HasValue))
+            foreach (var ev in events.Items)
             {
+                if (ev.Start.DateTime == null || ev.End.DateTime == null) // All-day event
+                {
+                    dateLinesAdd.Add($"All Day: {ev.Summary}");
+                    continue;
+                }
+
                 gcalEventsNew.Add(new GcalEvent
                 {
                     Title = ev.Summary,
@@ -179,6 +188,9 @@ public class CalendarViewModel : INotifyPropertyChanged
         {
             GcalEvents = gcalEventsNew;
             PropertyChanged(this, new PropertyChangedEventArgs(nameof(GcalEvents)));
+            DateLines.RemoveAll(line => line.StartsWith("All Day: "));
+            DateLines.AddRange(dateLinesAdd);
+            PropertyChanged(this, new PropertyChangedEventArgs(nameof(DateLines)));
         });
     }
 
@@ -220,6 +232,9 @@ public class CalendarViewModel : INotifyPropertyChanged
         // Create a new date lines list and insert the target date as the first line
         var dateLinesNew = new List<string>();
         dateLinesNew.Add($"{_targetDate:D}");
+
+        // Add in all-day events from old DateLines
+        dateLinesNew.AddRange(DateLines.Where(line => line.StartsWith("All Day: ")));
 
         foreach (VCard vCard in vCards)
         {

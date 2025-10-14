@@ -17,7 +17,7 @@ public class CalendarPanel : Panel
     {
         // Update the panel every 30 seconds - to keep the current time line updated
         var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(30) };
-        timer.Tick += (s, e) => InvalidateVisual();
+        timer.Tick += (_, _) => InvalidateVisual();
         timer.Start();
     }
 

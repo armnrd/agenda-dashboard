@@ -47,8 +47,8 @@ public partial class TitleBar : UserControl
 
     private void RefreshMenuItem_Click(object sender, RoutedEventArgs e)
     {
-        CalendarViewModel.RefreshAsync();
-        TodoistViewModel.RefreshAsync();
+        CalendarViewModel.Refresh();
+        TodoistViewModel.Refresh();
     }
 
     private void LockMenuItem_Checked(object sender, RoutedEventArgs e)

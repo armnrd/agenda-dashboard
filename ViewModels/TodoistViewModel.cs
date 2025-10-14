@@ -29,25 +29,25 @@ public class TodoistViewModel : INotifyPropertyChanged
 
         // Set up a timer to refresh the tasks model
         var timer = new System.Timers.Timer(refreshInterval * 1000);
-        timer.Elapsed += async (s, e) => { await RefreshAsync(); };
+        timer.Elapsed += (_, _) => { Refresh(); };
         timer.Start();
 
-        // Set a timer to wait for App.NotifMgr to become available and immediately call RefreshAsync()
+        // Set a timer to wait for App.NotifMgr to become available and immediately call Refresh()
         var initTimer = new System.Timers.Timer(500);
-        initTimer.Elapsed += async (s, e) =>
+        initTimer.Elapsed += async (_, _) =>
         {
             if (App.Current.NotifMgr != null)
             {
                 initTimer.Stop();
-                await RefreshAsync();
+                Refresh();
             }
         };
         initTimer.Start();
     }
 
-    internal async Task RefreshAsync()
+    internal void Refresh()
     {
-        await Functions.NotifExAsync(LoadTodoistTasksAsync, "Loaded Todoist tasks.");
+        Functions.NotifExAsync(LoadTodoistTasksAsync, "Loaded Todoist tasks.");
     }
 
     private async Task LoadTodoistTasksAsync()

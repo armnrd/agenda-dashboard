@@ -80,7 +80,7 @@ public partial class MainWindow : Window
 
         // Add status bar text scrolling 
         StatusBarMessage.SizeChanged +=
-            (s, e) => // Use SizeChanged event to listen for changes to the status text 
+            (_, _) => // Use SizeChanged event to listen for changes to the status text 
             {
                 if (StatusBarMessage.ActualWidth <= StatusBarMessageItem.ActualWidth)
                 {

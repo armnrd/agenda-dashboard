@@ -41,25 +41,25 @@ public partial class CalendarView : UserControl
     {
         var viewModel = DataContext as CalendarViewModel;
         viewModel.DecrementTargetDate();
-        viewModel.RefreshAsync();
+        viewModel.Refresh();
     }
 
     private void CurrentDayButton_Click(object sender, RoutedEventArgs e)
     {
         var viewModel = DataContext as CalendarViewModel;
         viewModel.ResetTargetDate();
-        viewModel.RefreshAsync();
+        viewModel.Refresh();
     }
 
     private void NextDayButton_Click(object sender, RoutedEventArgs e)
     {
         var viewModel = DataContext as CalendarViewModel;
         viewModel.IncrementTargetDate();
-        viewModel.RefreshAsync();
+        viewModel.Refresh();
     }
 
     private void RefreshButton_Click(object sender, RoutedEventArgs e)
     {
-        (DataContext as CalendarViewModel).RefreshAsync();
+        (DataContext as CalendarViewModel).Refresh();
     }
 }
