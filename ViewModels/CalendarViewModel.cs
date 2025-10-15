@@ -1,17 +1,14 @@
 ﻿using System.ComponentModel;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
-using System.Windows;
 using System.Windows.Media;
 using System.Windows.Threading;
 using System.Xml.Linq;
 using AgendaDashboard.Utilities;
-using AgendaDashboard.Views;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Calendar.v3;
 using Google.Apis.Services;

@@ -12,58 +12,7 @@
              d:DesignHeight="800" d:DesignWidth="300"
              d:DataContext="{d:DesignInstance viewModels:CalendarViewModel, IsDesignTimeCreatable=True}">
     <UserControl.Resources>
-        <utilities:OrBooleanToVisibilityConverter x:Key="PanelButtonVisibility" />
-
-        <Style x:Key="PanelButton" TargetType="Button">
-            <Setter Property="Background" Value="#FF2D2D30" />
-            <Setter Property="Foreground" Value="White" />
-            <Setter Property="BorderBrush" Value="Transparent" />
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="Border"
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                Opacity="0.8"
-                                CornerRadius="4">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <EventTrigger RoutedEvent="Button.Click">
-                                <BeginStoryboard>
-                                    <Storyboard>
-                                        <DoubleAnimation Storyboard.TargetName="Border"
-                                                         Storyboard.TargetProperty="Opacity"
-                                                         To="0"
-                                                         Duration="0:0:0.5" />
-                                        <DoubleAnimation Storyboard.TargetName="Border"
-                                                         Storyboard.TargetProperty="Opacity"
-                                                         To="0.8"
-                                                         BeginTime="0:0:2"
-                                                         Duration="0:0:0.2" />
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Border"
-                                                                       Storyboard.TargetProperty="IsHitTestVisible">
-                                            <DiscreteObjectKeyFrame KeyTime="0:0:0">
-                                                <DiscreteObjectKeyFrame.Value>
-                                                    <sys:Boolean>False</sys:Boolean>
-                                                </DiscreteObjectKeyFrame.Value>
-                                            </DiscreteObjectKeyFrame>
-                                            <DiscreteObjectKeyFrame KeyTime="0:0:2.7">
-                                                <DiscreteObjectKeyFrame.Value>
-                                                    <sys:Boolean>True</sys:Boolean>
-                                                </DiscreteObjectKeyFrame.Value>
-                                            </DiscreteObjectKeyFrame>
-                                        </ObjectAnimationUsingKeyFrames>
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </EventTrigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
+        <utilities:OrBooleanToVisibilityConverter x:Key="FloatButtonVisibility" />
     </UserControl.Resources>
     <Grid>
         <ScrollViewer x:Name="GcalScrollViewer"
@@ -118,7 +67,7 @@
                 VerticalAlignment="Bottom"
                 Margin="9,0,0,9"
                 Click="PreviousDayButton_Click"
-                Style="{StaticResource PanelButton}">
+                Style="{StaticResource FloatButton}">
             <Button.Content>
                 <TextBlock Text="&#x23F4;" Margin="5,0,5,4">
                     <TextBlock.LayoutTransform>
@@ -127,7 +76,7 @@
                 </TextBlock>
             </Button.Content>
             <Button.Visibility>
-                <MultiBinding Converter="{StaticResource PanelButtonVisibility}">
+                <MultiBinding Converter="{StaticResource FloatButtonVisibility}">
                     <Binding ElementName="GcalScrollViewer" Path="IsMouseOver" />
                     <Binding ElementName="PreviousDayButton" Path="IsMouseOver" />
                     <Binding ElementName="CurrentDayButton" Path="IsMouseOver" />
@@ -142,7 +91,7 @@
                 VerticalAlignment="Bottom"
                 Margin="44,0,0,9"
                 Click="CurrentDayButton_Click"
-                Style="{StaticResource PanelButton}">
+                Style="{StaticResource FloatButton}">
             <Button.Content>
                 <TextBlock Text="&#x25CF;" Margin="9,0,9,4">
                     <TextBlock.LayoutTransform>
@@ -151,7 +100,7 @@
                 </TextBlock>
             </Button.Content>
             <Button.Visibility>
-                <MultiBinding Converter="{StaticResource PanelButtonVisibility}">
+                <MultiBinding Converter="{StaticResource FloatButtonVisibility}">
                     <Binding ElementName="GcalScrollViewer" Path="IsMouseOver" />
                     <Binding ElementName="PreviousDayButton" Path="IsMouseOver" />
                     <Binding ElementName="CurrentDayButton" Path="IsMouseOver" />
@@ -166,7 +115,7 @@
                 VerticalAlignment="Bottom"
                 Margin="80,0,0,9"
                 Click="NextDayButton_Click"
-                Style="{StaticResource PanelButton}">
+                Style="{StaticResource FloatButton}">
             <Button.Content>
                 <TextBlock Text="&#x23F5;" Margin="5,0,5,4">
                     <TextBlock.LayoutTransform>
@@ -175,7 +124,7 @@
                 </TextBlock>
             </Button.Content>
             <Button.Visibility>
-                <MultiBinding Converter="{StaticResource PanelButtonVisibility}">
+                <MultiBinding Converter="{StaticResource FloatButtonVisibility}">
                     <Binding ElementName="GcalScrollViewer" Path="IsMouseOver" />
                     <Binding ElementName="PreviousDayButton" Path="IsMouseOver" />
                     <Binding ElementName="CurrentDayButton" Path="IsMouseOver" />
@@ -190,7 +139,7 @@
                 VerticalAlignment="Bottom"
                 Margin="0,0,26,9"
                 Click="RefreshButton_Click"
-                Style="{StaticResource PanelButton}">
+                Style="{StaticResource FloatButton}">
             <Button.Content>
                 <TextBlock Text="&#x27F2;" Margin="6,0,6,4">
                     <TextBlock.LayoutTransform>
@@ -199,7 +148,7 @@
                 </TextBlock>
             </Button.Content>
             <Button.Visibility>
-                <MultiBinding Converter="{StaticResource PanelButtonVisibility}">
+                <MultiBinding Converter="{StaticResource FloatButtonVisibility}">
                     <Binding ElementName="GcalScrollViewer" Path="IsMouseOver" />
                     <Binding ElementName="PreviousDayButton" Path="IsMouseOver" />
                     <Binding ElementName="CurrentDayButton" Path="IsMouseOver" />

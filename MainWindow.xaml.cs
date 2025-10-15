@@ -1,9 +1,6 @@
-﻿using System.Diagnostics;
-using System.DirectoryServices.ActiveDirectory;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows;
-using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Animation;

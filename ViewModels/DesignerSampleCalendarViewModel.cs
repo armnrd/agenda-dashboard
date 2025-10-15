@@ -1,14 +1,13 @@
 ﻿using System.ComponentModel;
-using System.Windows.Media;
 
 namespace AgendaDashboard.ViewModels;
 
-public class SampleCalendarViewModel : INotifyPropertyChanged
+public class DesignerSampleCalendarViewModel : INotifyPropertyChanged
 {
     public List<GcalEvent> GcalEvents { get; set; }
     public List<string> DateLines { get; set; }
 
-    public SampleCalendarViewModel()
+    public DesignerSampleCalendarViewModel()
     {
         GcalEvents = [];
         DateLines = [];
