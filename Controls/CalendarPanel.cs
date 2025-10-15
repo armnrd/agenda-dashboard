@@ -77,10 +77,10 @@ public class CalendarPanel : Panel
     {
         if (Children.Count == 0) return finalSize;
 
+        // TODO: error handling
         var eventPairs = Children
             .OfType<FrameworkElement>()
-            .Select(elem => (elem, elem.DataContext as GcalEvent))
-            .Where(pair => pair.Item2 != null)
+            .Select(elem => (elem, (elem.DataContext as GcalEvent)!))
             .OrderBy(pair => pair.Item2.Start)
             .ToList();
 

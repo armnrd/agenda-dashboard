@@ -21,6 +21,11 @@ public partial class CalendarView : UserControl
         Loaded += CalendarView_Loaded; // Subscribe to the Loaded event to load events when the window is ready
     }
 
+    internal void RefreshButton_Click(object sender, RoutedEventArgs? e)
+    {
+        (DataContext as CalendarViewModel)!.Refresh();
+    }
+
     private void CalendarView_Loaded(object sender, RoutedEventArgs e)
     {
         // Scroll to the current time on load
@@ -29,7 +34,7 @@ public partial class CalendarView : UserControl
 
         // Scroll to the current time line every 60 seconds
         var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(60) };
-        timer.Tick += (s, args) =>
+        timer.Tick += (_, _) =>
         {
             GcalScrollViewer.ScrollToVerticalOffset((DateTime.Now.TimeOfDay.TotalMinutes / 1440) *
                                                     GcalScrollViewer.ScrollableHeight); // 1440 minutes in a day
@@ -39,27 +44,22 @@ public partial class CalendarView : UserControl
 
     private void PreviousDayButton_Click(object sender, RoutedEventArgs e)
     {
-        var viewModel = DataContext as CalendarViewModel;
+        var viewModel = (DataContext as CalendarViewModel)!;
         viewModel.DecrementTargetDate();
         viewModel.Refresh();
     }
 
     private void CurrentDayButton_Click(object sender, RoutedEventArgs e)
     {
-        var viewModel = DataContext as CalendarViewModel;
+        var viewModel = (DataContext as CalendarViewModel)!;
         viewModel.ResetTargetDate();
         viewModel.Refresh();
     }
 
     private void NextDayButton_Click(object sender, RoutedEventArgs e)
     {
-        var viewModel = DataContext as CalendarViewModel;
+        var viewModel = (DataContext as CalendarViewModel)!;
         viewModel.IncrementTargetDate();
         viewModel.Refresh();
-    }
-
-    private void RefreshButton_Click(object sender, RoutedEventArgs e)
-    {
-        (DataContext as CalendarViewModel).Refresh();
     }
 }

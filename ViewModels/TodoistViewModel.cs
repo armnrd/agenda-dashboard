@@ -18,7 +18,7 @@ public class TodoistViewModel : INotifyPropertyChanged
     {
         // Get settings from ConfigMgr TODO: error handling
         var config = App.Current.ConfigMgr.Config["todoist"];
-        var refreshInterval = double.Parse(((YamlScalarNode)config["refresh interval"]).Value);
+        var refreshInterval = double.Parse((config["refresh interval"] as YamlScalarNode)!.Value!);
         _query = ((YamlScalarNode)config["query"]).Value;
 
         // Set up client
@@ -34,7 +34,7 @@ public class TodoistViewModel : INotifyPropertyChanged
 
         // Set a timer to wait for App.NotifMgr to become available and immediately call Refresh()
         var initTimer = new System.Timers.Timer(500);
-        initTimer.Elapsed += async (_, _) =>
+        initTimer.Elapsed += (_, _) =>
         {
             if (App.Current.NotifMgr != null)
             {
@@ -47,7 +47,7 @@ public class TodoistViewModel : INotifyPropertyChanged
 
     internal void Refresh()
     {
-        Functions.NotifExAsync(LoadTodoistTasksAsync, "Loaded Todoist tasks.");
+        _ = Functions.NotifExAsync(LoadTodoistTasksAsync, "Loaded Todoist tasks.");
     }
 
     private async Task LoadTodoistTasksAsync()
@@ -63,12 +63,12 @@ public class TodoistViewModel : INotifyPropertyChanged
         var todoistTasksNew = new List<TodoistTask>();
         foreach (var task in tasksEnumerator)
         {
-            todoistTasksNew.Add(new TodoistTask()
+            todoistTasksNew.Add(new TodoistTask() // TODO: error handling
             {
-                Id = task.GetProperty("id").GetString(),
-                Content = task.GetProperty("content").GetString(),
+                Id = task.GetProperty("id").GetString()!,
+                Content = task.GetProperty("content").GetString()!,
                 Checked = task.GetProperty("checked").GetBoolean(),
-                DueDate = DateTime.Parse(task.GetProperty("due").GetProperty("date").GetString()),
+                DueDate = DateTime.Parse(task.GetProperty("due").GetProperty("date").GetString()!),
                 DayOrder = task.GetProperty("day_order").GetInt16(),
                 ChildOrder = task.GetProperty("child_order").GetInt16()
             });
@@ -90,17 +90,17 @@ public class TodoistViewModel : INotifyPropertyChanged
         await App.Current.Dispatcher.InvokeAsync(() =>
         {
             TodoistTasks = todoistTasksNew;
-            PropertyChanged(this, new PropertyChangedEventArgs(nameof(TodoistTasks)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TodoistTasks)));
         });
     }
 
-    public event PropertyChangedEventHandler PropertyChanged;
+    public event PropertyChangedEventHandler? PropertyChanged;
 }
 
 public class TodoistTask
 {
-    public string Id { get; set; }
-    public string Content { get; set; }
+    public string Id { get; set; } = "";
+    public string Content { get; set; } = "";
     public DateTime? DueDate { get; set; }
     public bool Checked { get; set; }
     public short DayOrder { get; set; }

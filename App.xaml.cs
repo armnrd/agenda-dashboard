@@ -2,6 +2,7 @@
 using System.Windows;
 using System.Windows.Input;
 using AgendaDashboard.Managers;
+using AgendaDashboard.Utilities;
 
 namespace AgendaDashboard;
 
@@ -10,9 +11,9 @@ namespace AgendaDashboard;
 /// </summary>
 public partial class App : Application
 {
-    public NotifMgr NotifMgr { get; private set; }
-    public ConfigMgr ConfigMgr { get; private set; }
-    public new static App Current => Application.Current as App;
+    public NotifMgr? NotifMgr { get; private set; }
+    public ConfigMgr ConfigMgr { get; private set; } = new();
+    public new static App Current => (Application.Current as App)!;
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -20,14 +21,13 @@ public partial class App : Application
 
         // Set up logging
         #if DEBUG
-        Trace.Listeners.Add(new Utilities.TimestampConsoleTraceListener(true));
+        Trace.Listeners.Add(new TimestampConsoleTraceListener(true));
         #else
-        Trace.Listeners.Add(new Utilities.TimestampTextWriterTraceListener($"log_{DateTime.Now:yyyyMMdd}.txt"));
+        Trace.Listeners.Add(new TimestampTextWriterTraceListener($"log_{DateTime.Now:yyyyMMdd}.txt"));
         #endif
         Trace.AutoFlush = true;
 
         // Create the main window, config and notification managers
-        ConfigMgr = new ConfigMgr();
         var mainWindow = new MainWindow();
         NotifMgr = new NotifMgr(mainWindow.ShowNotification);
         mainWindow.Loaded += SetUpGlobalKeybind;
@@ -36,7 +36,7 @@ public partial class App : Application
 
     private static void SetUpGlobalKeybind(object sender, RoutedEventArgs routedEventArgs)
     {
-        var mainWindow = sender as MainWindow;
+        var mainWindow = (sender as MainWindow)!;
         // Set ctrl+win+# as a global keybind that temporarily raises mainWindow to the top of the z-order
         var raiseKeybind = new GlobalKeybind(
             mainWindow,

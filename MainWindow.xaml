@@ -21,7 +21,7 @@
 
         <controls:TitleBar x:Name="TitleBar" Grid.Row="0" />
 
-        <views:CalendarView x:Name="GcalView" Grid.Row="1" />
+        <views:CalendarView x:Name="CalendarView" Grid.Row="1" />
 
         <GridSplitter Grid.Row="2" Height="6" HorizontalAlignment="Stretch" VerticalAlignment="Center"
                       Background="#EEE" ShowsPreview="True" />

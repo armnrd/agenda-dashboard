@@ -2,11 +2,11 @@
 
 namespace AgendaDashboard.Utilities;
 
-internal static partial class Functions
+internal static class Functions
 {
     internal static async Task NotifExAsync(Func<Task> asyncFunc, string successMessage)
     {
-        var notifMgr = App.Current.NotifMgr;
+        var notifMgr = App.Current.NotifMgr!;
         try
         {
             await asyncFunc();

@@ -1,15 +1,11 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Shell;
-using AgendaDashboard.ViewModels;
 
 namespace AgendaDashboard.Controls;
 
 public partial class TitleBar : UserControl
 {
-    public CalendarViewModel CalendarViewModel { get; set; }
-    public TodoistViewModel TodoistViewModel { get; set; }
-
     public TitleBar()
     {
         InitializeComponent();
@@ -20,9 +16,9 @@ public partial class TitleBar : UserControl
     {
         // Lock the window by default; do this by checking the "Lock Window" menu item
         foreach (var item in MainMenu.Items)
-            if ((item as MenuItem).Header?.ToString() == "Lock Window")
+            if ((item as MenuItem)!.Header?.ToString() == "Lock Window")
             {
-                (item as MenuItem).IsChecked = true;
+                (item as MenuItem)!.IsChecked = true;
                 break;
             }
     }
@@ -47,8 +43,9 @@ public partial class TitleBar : UserControl
 
     private void RefreshMenuItem_Click(object sender, RoutedEventArgs e)
     {
-        CalendarViewModel.Refresh();
-        TodoistViewModel.Refresh();
+        var mainWindow = (Window.GetWindow(this) as MainWindow)!;
+        mainWindow.CalendarView.RefreshButton_Click(this, null);
+        mainWindow.TodoistView.RefreshButton_Click(this, null);
     }
 
     private void LockMenuItem_Checked(object sender, RoutedEventArgs e)
