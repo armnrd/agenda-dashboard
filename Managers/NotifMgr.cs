@@ -28,14 +28,15 @@ public class NotifMgr
     public void QueueMessage(string message, string status)
     {
         _msgQueue.Enqueue((message, status));
-        if (_statusBarEmpty) // Show the message immediately if the status bar is empty
-        {
-            Application.Current.Dispatcher.InvokeAsync(ShowNextMessage, DispatcherPriority.Normal);
-            _statusBarEmpty = false;
-            // Reset the timer
-            _msgTimer.Stop();
-            _msgTimer.Start();
-        }
+
+        if (!_statusBarEmpty) return; // Nothing else to do if the status bar is not empty
+
+        // Immediately show message if the status bar is empty - InvokeAsync not necessary, quick operations
+        Application.Current.Dispatcher.Invoke(ShowNextMessage, DispatcherPriority.Normal);
+        _statusBarEmpty = false;
+        // Reset the timer
+        _msgTimer.Stop();
+        _msgTimer.Start();
     }
 
     private void ShowNextMessage()

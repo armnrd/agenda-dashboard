@@ -11,15 +11,25 @@ namespace AgendaDashboard.ViewModels;
 public class TodoistViewModel : INotifyPropertyChanged
 {
     public List<TodoistTask> TodoistTasks { get; private set; } = [];
-    private readonly HttpClient _client;
-    private readonly string? _query;
+    private HttpClient _client = new();
+    private string _query = "";
 
     public TodoistViewModel()
+    {
+        Startup();
+    }
+
+    internal void Refresh()
+    {
+        _ = Functions.NotifExAsync(LoadTodoistTasksAsync, "Loaded Todoist tasks.");
+    }
+
+    private void Startup()
     {
         // Get settings from ConfigMgr TODO: error handling
         var config = App.Current.ConfigMgr.Config["todoist"];
         var refreshInterval = double.Parse((config["refresh interval"] as YamlScalarNode)!.Value!);
-        _query = ((YamlScalarNode)config["query"]).Value;
+        _query = (config["query"] as YamlScalarNode)!.Value!;
 
         // Set up client
         var credentials = JsonDocument.Parse(File.ReadAllText("credentials_todoist.json"));
@@ -36,18 +46,11 @@ public class TodoistViewModel : INotifyPropertyChanged
         var initTimer = new System.Timers.Timer(500);
         initTimer.Elapsed += (_, _) =>
         {
-            if (App.Current.NotifMgr != null)
-            {
-                initTimer.Stop();
-                Refresh();
-            }
+            if (App.Current.NotifMgr == null) return;
+            initTimer.Stop();
+            Refresh();
         };
         initTimer.Start();
-    }
-
-    internal void Refresh()
-    {
-        _ = Functions.NotifExAsync(LoadTodoistTasksAsync, "Loaded Todoist tasks.");
     }
 
     private async Task LoadTodoistTasksAsync()
@@ -60,10 +63,7 @@ public class TodoistViewModel : INotifyPropertyChanged
         var tasksEnumerator = json.RootElement.GetProperty("results").EnumerateArray();
 
         // Create a new list to hold the TodoistTask objects
-        var todoistTasksNew = new List<TodoistTask>();
-        foreach (var task in tasksEnumerator)
-        {
-            todoistTasksNew.Add(new TodoistTask() // TODO: error handling
+        var todoistTasksNew = tasksEnumerator.Select(task => new TodoistTask() // TODO: error handling
             {
                 Id = task.GetProperty("id").GetString()!,
                 Content = task.GetProperty("content").GetString()!,
@@ -71,8 +71,8 @@ public class TodoistViewModel : INotifyPropertyChanged
                 DueDate = DateTime.Parse(task.GetProperty("due").GetProperty("date").GetString()!),
                 DayOrder = task.GetProperty("day_order").GetInt16(),
                 ChildOrder = task.GetProperty("child_order").GetInt16()
-            });
-        }
+            })
+            .ToList();
 
         // Sort the tasks by day order
         todoistTasksNew.Sort((x, y) =>
@@ -86,8 +86,8 @@ public class TodoistViewModel : INotifyPropertyChanged
             return x.DayOrder.CompareTo(y.DayOrder);
         });
 
-        // Replace model and notify property change on Dispatcher
-        await App.Current.Dispatcher.InvokeAsync(() =>
+        // Replace model and notify property change on Dispatcher - InvokeAsync not necessary, quick operations
+        App.Current.Dispatcher.Invoke(() =>
         {
             TodoistTasks = todoistTasksNew;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TodoistTasks)));
@@ -99,10 +99,10 @@ public class TodoistViewModel : INotifyPropertyChanged
 
 public class TodoistTask
 {
-    public string Id { get; set; } = "";
-    public string Content { get; set; } = "";
-    public DateTime? DueDate { get; set; }
-    public bool Checked { get; set; }
-    public short DayOrder { get; set; }
-    public short ChildOrder { get; set; }
+    public string Id { get; init; } = "";
+    public string Content { get; init; } = "";
+    public DateTime DueDate { get; init; }
+    public bool Checked { get; init; }
+    public short DayOrder { get; init; }
+    public short ChildOrder { get; init; }
 }

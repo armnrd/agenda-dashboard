@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Threading;
 using AgendaDashboard.ViewModels;
 
@@ -61,5 +62,15 @@ public partial class CalendarView : UserControl
         var viewModel = (DataContext as CalendarViewModel)!;
         viewModel.IncrementTargetDate();
         viewModel.Refresh();
+    }
+
+    private void GcalScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+    {
+        const double scrollAmount = 30; // Adjust this value for desired speed
+        if (e.Delta < 0)
+            GcalScrollViewer.ScrollToVerticalOffset(GcalScrollViewer.VerticalOffset + scrollAmount);
+        else
+            GcalScrollViewer.ScrollToVerticalOffset(GcalScrollViewer.VerticalOffset - scrollAmount);
+        e.Handled = true;
     }
 }

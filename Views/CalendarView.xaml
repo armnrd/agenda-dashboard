@@ -15,7 +15,9 @@
     </UserControl.Resources>
     <Grid>
         <ScrollViewer x:Name="GcalScrollViewer"
-                      VerticalScrollBarVisibility="Visible">
+                      VerticalScrollBarVisibility="Visible"
+                      PreviewMouseWheel="GcalScrollViewer_PreviewMouseWheel"
+                      >
             <ItemsControl ItemsSource="{Binding GcalEvents}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>

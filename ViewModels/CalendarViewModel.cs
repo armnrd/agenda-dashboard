@@ -3,6 +3,7 @@ using System.Globalization;
 using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Runtime.InteropServices.JavaScript;
 using System.Text;
 using System.Text.Json;
 using System.Windows.Media;
@@ -21,99 +22,17 @@ namespace AgendaDashboard.ViewModels;
 
 public class CalendarViewModel : INotifyPropertyChanged
 {
-    public List<GcalEvent> GcalEvents { get; set; }
-    public List<string> DateLines { get; set; }
-    private DateTime _targetDate;
-    private readonly IEnumerable<string?> _selectedIds;
-    private readonly CalendarService _serviceGcal;
-    private readonly HttpClient _clientCardDav;
-    private readonly string _urlCardDav;
+    public List<GcalEvent> GcalEvents { get; set; } = [];
+    public List<string> DateLines { get; set; } = [];
+    private DateTime _targetDate = DateTime.Now.Date;
+    private IEnumerable<string?> _selectedIds = [];
+    private CalendarService _serviceGcal = new();
+    private HttpClient _clientCardDav = new();
+    private string _urlCardDav = "";
 
     public CalendarViewModel()
     {
-        GcalEvents = [];
-        DateLines = [];
-
-        // Initialize the target date to today
-        _targetDate = DateTime.Now.Date;
-
-        // Get Google Calendar settings from ConfigMgr
-        var configGcal = App.Current.ConfigMgr.Config["google calendar"];
-        var refreshIntervalGCal = double.Parse((configGcal["refresh interval"] as YamlScalarNode)!.Value!); // TODO: error handling
-        _selectedIds = ((YamlSequenceNode)configGcal["selected ids"]).Children
-            .OfType<YamlScalarNode>()
-            .Select(node => node.Value);
-
-        // Get CardDAV settings from ConfigMgr
-        var configCardDav = App.Current.ConfigMgr.Config["carddav"];
-        var refreshIntervalCardDav = double.Parse((configCardDav["refresh interval"] as YamlScalarNode)!.Value!); // TODO: error handling
-        _urlCardDav = ((YamlScalarNode)configCardDav["url"]).Value!;
-
-        // Set up CardDAV client
-        var credentials = JsonDocument.Parse(File.ReadAllText("credentials_carddav.json"));
-        var usernameCardDav = credentials.RootElement.GetProperty("username").GetString();
-        var passwordCardDav = credentials.RootElement.GetProperty("password").GetString();
-        _clientCardDav = new HttpClient();
-        var byteArray = Encoding.ASCII.GetBytes($"{usernameCardDav}:{passwordCardDav}");
-        _clientCardDav.DefaultRequestHeaders.Authorization =
-            new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
-
-        // Set up Google Calendar API service
-        string[] scopes = [CalendarService.Scope.CalendarReadonly];
-        const string applicationName = "Agenda Dashboard";
-        UserCredential credential;
-
-        using (var stream = new FileStream("credentials_gcal.json", FileMode.Open, FileAccess.Read))
-        {
-            credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
-                GoogleClientSecrets.FromStream(stream).Secrets,
-                scopes,
-                "user",
-                CancellationToken.None,
-                new FileDataStore("gcal_token", true)).Result;
-        }
-
-        _serviceGcal = new CalendarService(new BaseClientService.Initializer()
-        {
-            HttpClientInitializer = credential,
-            ApplicationName = applicationName,
-        });
-
-        // Set up a timer to refresh the Google Calendar events model
-        var timerGCal = new DispatcherTimer { Interval = TimeSpan.FromSeconds(refreshIntervalGCal) };
-        timerGCal.Tick += (_, _) =>
-        {
-            ResetTargetDate(); // Reset target date to today before loading events
-            _ = SafeLoadGcalEventsAsync();
-        };
-        timerGCal.Start();
-
-        // Set up a timer to refresh CardDAV events
-        var timerCardDav = new DispatcherTimer { Interval = TimeSpan.FromSeconds(refreshIntervalCardDav) };
-        timerCardDav.Tick += (_, _) =>
-        {
-            ResetTargetDate(); // Reset target date to today before loading events
-            _ = SafeLoadCardDavEventsAsync();
-        };
-        timerCardDav.Start();
-
-        // Set a timer to wait for App.NotifMgr to become available and immediately load data
-        var initTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
-        initTimer.Tick += (_, _) =>
-        {
-            if (App.Current.NotifMgr != null)
-            {
-                initTimer.Stop();
-                Refresh();
-            }
-        };
-        initTimer.Start();
-    }
-
-    internal void Refresh()
-    {
-        _ = SafeLoadCardDavEventsAsync();
-        _ = SafeLoadGcalEventsAsync();
+        _ = StartupAsync();
     }
 
     internal void DecrementTargetDate()
@@ -131,6 +50,96 @@ public class CalendarViewModel : INotifyPropertyChanged
         _targetDate = DateTime.Now.Date;
     }
 
+    internal void Refresh()
+    {
+        RefreshGcal();
+        RefreshCardDav();
+    }
+
+    private void RefreshGcal()
+    {
+        _ = Functions.NotifExAsync(LoadGcalEventsAsync, "Loaded Google Calendar events.");
+    }
+
+    private void RefreshCardDav()
+    {
+        _ = Functions.NotifExAsync(LoadCardDavEventsAsync, "Loaded Google Calendar events.");
+    }
+
+    private async Task StartupAsync()
+    {
+        // Get CardDAV settings from ConfigMgr
+        var configCardDav = App.Current.ConfigMgr.Config["carddav"];
+        var refreshIntervalCardDav = double.Parse((configCardDav["refresh interval"] as YamlScalarNode)!.Value!); // TODO: error handling
+        _urlCardDav = ((YamlScalarNode)configCardDav["url"]).Value!;
+
+        // Set up CardDAV client
+        var credentials = JsonDocument.Parse(await File.ReadAllTextAsync("credentials_carddav.json"));
+        var usernameCardDav = credentials.RootElement.GetProperty("username").GetString();
+        var passwordCardDav = credentials.RootElement.GetProperty("password").GetString();
+        _clientCardDav = new HttpClient();
+        var byteArray = Encoding.ASCII.GetBytes($"{usernameCardDav}:{passwordCardDav}");
+        _clientCardDav.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
+
+        // Get Google Calendar settings from ConfigMgr
+        var configGcal = App.Current.ConfigMgr.Config["google calendar"];
+        var refreshIntervalGCal = double.Parse((configGcal["refresh interval"] as YamlScalarNode)!.Value!); // TODO: error handling
+        _selectedIds = ((YamlSequenceNode)configGcal["selected ids"]).Children
+            .OfType<YamlScalarNode>()
+            .Select(node => node.Value);
+
+        // Set up Google Calendar API service
+        string[] scopes = [CalendarService.Scope.CalendarReadonly];
+        const string applicationName = "Agenda Dashboard";
+        UserCredential credential;
+
+        // ReSharper disable once UseAwaitUsing - really small file
+        using (var stream = new FileStream("credentials_gcal.json", FileMode.Open, FileAccess.Read))
+        {
+            credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
+                (await GoogleClientSecrets.FromStreamAsync(stream)).Secrets,
+                scopes,
+                "user",
+                CancellationToken.None,
+                new FileDataStore("gcal_token", true));
+        }
+
+        _serviceGcal = new CalendarService(new BaseClientService.Initializer()
+        {
+            HttpClientInitializer = credential,
+            ApplicationName = applicationName,
+        });
+
+        // Set up a repeating timer to refresh the Google Calendar events model
+        var timerGCal = new DispatcherTimer { Interval = TimeSpan.FromSeconds(refreshIntervalGCal) };
+        timerGCal.Tick += (_, _) =>
+        {
+            ResetTargetDate(); // Reset target date to today before loading events
+            RefreshGcal();
+        };
+        timerGCal.Start();
+
+        // Set up a repeating timer to refresh CardDAV events
+        var timerCardDav = new DispatcherTimer { Interval = TimeSpan.FromSeconds(refreshIntervalCardDav) };
+        timerCardDav.Tick += (_, _) =>
+        {
+            ResetTargetDate(); // Reset target date to today before loading events
+            RefreshCardDav();
+        };
+        timerCardDav.Start();
+
+        // Wait for App.NotifMgr to become available and immediately load data
+        var initTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
+        initTimer.Tick += (_, _) =>
+        {
+            if (App.Current.NotifMgr == null) return;
+            initTimer.Stop();
+            Refresh();
+        };
+        initTimer.Start();
+    }
+
     private async Task LoadGcalEventsAsync()
     {
         var calendarList = await _serviceGcal.CalendarList.List().ExecuteAsync();
@@ -140,8 +149,7 @@ public class CalendarViewModel : INotifyPropertyChanged
         foreach (var calendar in calendarList.Items)
         {
             // Skip calendars that are not selected
-            if (!_selectedIds.Contains(calendar.Id))
-                continue;
+            if (!_selectedIds.Contains(calendar.Id)) continue;
 
             // Convert calendar hex color to Brush
             var color = (Color)ColorConverter.ConvertFromString(calendar.BackgroundColor);
@@ -177,7 +185,7 @@ public class CalendarViewModel : INotifyPropertyChanged
             }
         }
 
-        // Replace model and notify property change on Dispatcher
+        // Replace model and notify property change on Dispatcher - InvokeAsync not necessary, quick operations
         App.Current.Dispatcher.Invoke(() =>
         {
             GcalEvents = gcalEventsNew;
@@ -186,11 +194,6 @@ public class CalendarViewModel : INotifyPropertyChanged
             DateLines.AddRange(dateLinesAdd);
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DateLines)));
         });
-    }
-
-    private async Task SafeLoadGcalEventsAsync()
-    {
-        await Functions.NotifExAsync(LoadGcalEventsAsync, "Loaded Google Calendar events.");
     }
 
     private async Task LoadCardDavEventsAsync()
@@ -224,8 +227,7 @@ public class CalendarViewModel : INotifyPropertyChanged
         var vCards = SimpleDeserializer.Default.Deserialize(tr); // Parse vCard string
 
         // Create a new date lines list and insert the target date as the first line
-        var dateLinesNew = new List<string>();
-        dateLinesNew.Add($"{_targetDate:D}");
+        var dateLinesNew = new List<string> { $"{_targetDate:D}" };
 
         // Add in all-day events from old DateLines
         dateLinesNew.AddRange(DateLines.Where(line => line.StartsWith("All Day: ")));
@@ -234,8 +236,7 @@ public class CalendarViewModel : INotifyPropertyChanged
         {
             var vCard = (vCardComponent as VCard)!; // TODO: error handling
             if (!DateTime.TryParseExact(vCard.Birthdate, ["yyyyMMdd", "yyyy-MM-dd"], null, DateTimeStyles.None,
-                    out var bd))
-                continue;
+                    out var bd)) continue;
 
             // Check if birthdate in vCard matches TargetDate
             if (bd.Month == _targetDate.Month && bd.Day == _targetDate.Day)
@@ -245,28 +246,21 @@ public class CalendarViewModel : INotifyPropertyChanged
             }
         }
 
-        // Replace model and notify property change
-        await App.Current.Dispatcher.InvokeAsync(() =>
+        // Replace model and notify property change - InvokeAsync not necessary, quick operations
+        App.Current.Dispatcher.Invoke(() =>
         {
             DateLines = dateLinesNew;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DateLines)));
         });
     }
 
-    private async Task SafeLoadCardDavEventsAsync()
-    {
-        await Functions.NotifExAsync(LoadCardDavEventsAsync, "Loaded CardDAV event dates.");
-    }
-
     private static string YearDiffToOrdinal(DateTime start, DateTime end)
     {
-        int years = end.Year - start.Year;
-        if (end.Month < start.Month || (end.Month == start.Month && end.Day < start.Day))
-            years--;
+        var years = end.Year - start.Year;
+        if (end.Month < start.Month || (end.Month == start.Month && end.Day < start.Day)) years--;
 
-        int rem100 = years % 100;
-        if (rem100 >= 11 && rem100 <= 13)
-            return $"{years}th";
+        var rem100 = years % 100;
+        if (rem100 is >= 11 and <= 13) return $"{years}th";
 
         switch (years % 10)
         {
@@ -282,9 +276,9 @@ public class CalendarViewModel : INotifyPropertyChanged
 
 public class GcalEvent
 {
-    public string Title { get; set; } = "";
-    public DateTime Start { get; set; }
-    public DateTime End { get; set; }
-    public string CalendarName { get; set; } = "";
-    public Brush CalendarColor { get; set; } = Brushes.Gray;
+    public string Title { get; init; } = "";
+    public DateTime Start { get; init; }
+    public DateTime End { get; init; }
+    public string CalendarName { get; init; } = "";
+    public Brush CalendarColor { get; init; } = Brushes.Gray;
 }
