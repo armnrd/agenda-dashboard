@@ -34,7 +34,7 @@ public partial class MainWindow : Window
         // Make the window a tool window: doesn't show up in taskbar or alt-tab switcher
         const int gwlpExstyle = -20; // Extended window styles
         const int wsExToolwindow = 0x00000080, wsExAppwindow = 0x00040000;
-        int exStyle = GetWindowLongPtr(hwnd, gwlpExstyle);
+        var exStyle = GetWindowLongPtr(hwnd, gwlpExstyle);
 
         // Add TOOLWINDOW, remove APPWINDOW from the extended styles
         exStyle |= wsExToolwindow;
@@ -79,7 +79,7 @@ public partial class MainWindow : Window
         var hwnd = new WindowInteropHelper(this).Handle;
         const int hwndTopmost = -1;
         const int swpNosize = 0x0001, swpNomove = 0x0002, swpNoactivate = 0x0010;
-        SetWindowPos(hwnd, hwndTopmost, 0, 0, 0, 0, swpNosize | swpNomove | swpNoactivate);
+        SetWindowPos(hwnd, hwndTopmost, 0, 0, 0, 0, swpNosize | swpNomove | swpNoactivate); // TODO: error handling
     }
 
     private new void Drop()
@@ -88,7 +88,7 @@ public partial class MainWindow : Window
         var hwnd = new WindowInteropHelper(this).Handle;
         const int hwndBottom = 1;
         const int swpNosize = 0x0001, swpNomove = 0x0002, swpNoactivate = 0x0010;
-        SetWindowPos(hwnd, hwndBottom, 0, 0, 0, 0, swpNosize | swpNomove | swpNoactivate);
+        SetWindowPos(hwnd, hwndBottom, 0, 0, 0, 0, swpNosize | swpNomove | swpNoactivate); // TODO: error handling
     }
 
     [DllImport("user32.dll")]

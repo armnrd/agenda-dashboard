@@ -39,11 +39,12 @@
                     </Grid>
                 </ItemsPanelTemplate>
             </StatusBar.ItemsPanel>
-            <StatusBarItem x:Name="StatusBarMessageItem" Grid.Column="0" Margin="4,0,0,0">
+            <StatusBarItem Grid.Column="0"
+                           Margin="4,0,0,0">
                 <TextBlock x:Name="StatusBarMessage"
                            VerticalAlignment="Center">
                     <TextBlock.RenderTransform>
-                        <TranslateTransform x:Name="StatusBarMessageTransform" />
+                        <TranslateTransform />
                     </TextBlock.RenderTransform>
                 </TextBlock>
             </StatusBarItem>

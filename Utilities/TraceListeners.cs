@@ -4,7 +4,7 @@ namespace AgendaDashboard.Utilities;
 
 internal class TimestampConsoleTraceListener(bool useErrorStream) : ConsoleTraceListener(useErrorStream)
 {
-    private string GetTimestamp() => $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] ";
+    private static string GetTimestamp() => $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] ";
 
     public override void Write(string? message)
     {
@@ -19,7 +19,7 @@ internal class TimestampConsoleTraceListener(bool useErrorStream) : ConsoleTrace
 
 internal class TimestampTextWriterTraceListener(string? fileName) : TextWriterTraceListener(fileName)
 {
-    private string GetTimestamp() => $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] ";
+    private static string GetTimestamp() => $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] ";
 
     public override void Write(string? message)
     {

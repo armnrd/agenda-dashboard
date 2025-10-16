@@ -31,7 +31,7 @@ public class OrBooleanToVisibilityConverter : IMultiValueConverter
     public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
     {
         foreach (var value in values)
-            if (value is bool b && b)
+            if (value is true)
                 return Visibility.Visible;
         return Visibility.Collapsed;
     }

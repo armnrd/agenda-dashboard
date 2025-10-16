@@ -38,12 +38,10 @@ internal class GlobalKeybind : IDisposable
     private IntPtr HwndHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
     {
         const int wmHotkey = 0x0312;
-        if (msg == wmHotkey && wParam.ToInt32() == _id)
-        {
-            Pressed?.Invoke(this, EventArgs.Empty);
-            handled = true; // Mark the message as handled
-        }
+        if (msg != wmHotkey || wParam.ToInt32() != _id) return IntPtr.Zero; // TODO: Is this the right return value?
 
+        Pressed?.Invoke(this, EventArgs.Empty);
+        handled = true; // Mark the message as handled
         return IntPtr.Zero; // TODO: Is this the right return value?
     }
 

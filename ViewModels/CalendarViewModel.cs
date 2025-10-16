@@ -3,7 +3,6 @@ using System.Globalization;
 using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Runtime.InteropServices.JavaScript;
 using System.Text;
 using System.Text.Json;
 using System.Windows.Media;
@@ -105,10 +104,10 @@ public class CalendarViewModel : INotifyPropertyChanged
                 new FileDataStore("gcal_token", true));
         }
 
-        _serviceGcal = new CalendarService(new BaseClientService.Initializer()
+        _serviceGcal = new CalendarService(new BaseClientService.Initializer
         {
             HttpClientInitializer = credential,
-            ApplicationName = applicationName,
+            ApplicationName = applicationName
         });
 
         // Set up a repeating timer to refresh the Google Calendar events model
@@ -199,13 +198,13 @@ public class CalendarViewModel : INotifyPropertyChanged
     private async Task LoadCardDavEventsAsync()
     {
         // CardDAV REPORT request body to get all vCards
-        string reportXml = @"<?xml version='1.0' encoding='UTF-8'?>" +
-                           "<card:addressbook-query xmlns:card='urn:ietf:params:xml:ns:carddav'>" +
-                           "  <dav:prop xmlns:dav='DAV:'>" +
-                           "    <dav:getetag/>" +
-                           "    <card:address-data/>" +
-                           "  </dav:prop>" +
-                           "</card:addressbook-query>";
+        const string reportXml = "<?xml version='1.0' encoding='UTF-8'?>" +
+                                 "<card:addressbook-query xmlns:card='urn:ietf:params:xml:ns:carddav'>" +
+                                 "  <dav:prop xmlns:dav='DAV:'>" +
+                                 "    <dav:getetag/>" +
+                                 "    <card:address-data/>" +
+                                 "  </dav:prop>" +
+                                 "</card:addressbook-query>";
 
         var request = new HttpRequestMessage(new HttpMethod("REPORT"), _urlCardDav)
         {
@@ -262,13 +261,13 @@ public class CalendarViewModel : INotifyPropertyChanged
         var rem100 = years % 100;
         if (rem100 is >= 11 and <= 13) return $"{years}th";
 
-        switch (years % 10)
+        return (years % 10) switch
         {
-            case 1: return $"{years}st";
-            case 2: return $"{years}nd";
-            case 3: return $"{years}rd";
-            default: return $"{years}th";
-        }
+            1 => $"{years}st",
+            2 => $"{years}nd",
+            3 => $"{years}rd",
+            _ => $"{years}th"
+        };
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
