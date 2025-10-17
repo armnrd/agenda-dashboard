@@ -19,7 +19,7 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <controls:TitleBar x:Name="TitleBar" Grid.Row="0" />
+        <controls:TitleBar Grid.Row="0" />
 
         <views:CalendarView x:Name="CalendarView" Grid.Row="1" />
 

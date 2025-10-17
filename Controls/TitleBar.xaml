@@ -4,28 +4,14 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d"
-             d:DesignHeight="32" d:DesignWidth="300">
+             d:DesignHeight="32"
+             d:DesignWidth="300">
     <UserControl.Resources>
-        <Style x:Key="TitleBar" TargetType="DockPanel">
-            <Setter Property="Background" Value="#FF2D2D30" />
-        </Style>
-
-        <Style x:Key="TitleBarButton" TargetType="ToggleButton">
+        <Style x:Key="MenuButton" TargetType="ToggleButton">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="Foreground" Value="White" />
             <Setter Property="BorderBrush" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="ToggleButton">
-                        <Border Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
                     <Setter Property="Background" Value="#FF4A4A4D" />
@@ -35,36 +21,46 @@
                 </Trigger>
             </Style.Triggers>
         </Style>
-        
-        <Style x:Key="TitleBarContextMenu" TargetType="ContextMenu">
-            <Setter Property="Background" Value="#FF2D2D30" />
-            <Setter Property="Foreground" Value="White" />
-            <Setter Property="BorderBrush" Value="Transparent" />
-            <Setter Property="BorderThickness" Value="0" />
-        </Style>
     </UserControl.Resources>
-    
-    <DockPanel Height="32" Style="{StaticResource TitleBar}">
-        <ToggleButton x:Name="MainMenuButton" Width="32" DockPanel.Dock="Left"
-                Content="&#x2630;"
-                ToolTip="Menu"
-                Checked="MainMenuButton_Checked"
-                Unchecked="MainMenuButton_Unchecked"
-                WindowChrome.IsHitTestVisibleInChrome="True"
-                Style="{StaticResource TitleBarButton}">
+    <DockPanel Height="32"
+               Background="#FF2D2D30">
+        <ToggleButton x:Name="MenuButton" Width="32" DockPanel.Dock="Left"
+                      Content="&#x2630;"
+                      ToolTip="Menu"
+                      Checked="MenuButton_Checked"
+                      Unchecked="MenuButton_Unchecked"
+                      WindowChrome.IsHitTestVisibleInChrome="True"
+                      Style="{StaticResource MenuButton}">
+            <ToggleButton.Template>
+                <ControlTemplate TargetType="ToggleButton">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                </ControlTemplate>
+            </ToggleButton.Template>
+
             <ToggleButton.ContextMenu>
-                <ContextMenu x:Name="MainMenu"
-                             Closed="MainMenu_Closed"
-                             Style="{StaticResource TitleBarContextMenu}">
-                    <MenuItem Header="Refresh" Click="RefreshMenuItem_Click" />
-                    <MenuItem Header="Lock Window" IsCheckable="True" Checked="LockMenuItem_Checked" Unchecked="LockMenuItem_Unchecked" />
-                    <MenuItem Header="Exit" Click="ExitMenuItem_Click" />
+                <ContextMenu x:Name="Menu"
+                             Background="#FF2D2D30"
+                             Foreground="White"
+                             BorderBrush="Transparent"
+                             BorderThickness="0"
+                             Closed="Menu_Closed">
+                    <MenuItem Header="Refresh"
+                              Click="RefreshMenuItem_Click" />
+                    <MenuItem Header="Lock Window" IsCheckable="True" Checked="LockMenuItem_Checked"
+                              Unchecked="LockMenuItem_Unchecked" />
+                    <MenuItem Header="Exit"
+                              Click="ExitMenuItem_Click" />
                 </ContextMenu>
             </ToggleButton.ContextMenu>
         </ToggleButton>
-        
-        <TextBlock Text="Agenda Dashboard" Foreground="White" VerticalAlignment="Center" DockPanel.Dock="Left" Padding="8,0,8,0" Margin="0" />
-        
+
+        <TextBlock Text="Agenda Dashboard" Foreground="White" VerticalAlignment="Center" DockPanel.Dock="Left"
+                   Padding="8,0,8,0" Margin="0" />
+
         <Border HorizontalAlignment="Stretch" DockPanel.Dock="Left" />
     </DockPanel>
 </UserControl>

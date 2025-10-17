@@ -15,7 +15,7 @@ public partial class TitleBar : UserControl
     private void TitleBar_Loaded(object sender, RoutedEventArgs e)
     {
         // Lock the window by default; do this by checking the "Lock Window" menu item
-        foreach (var item in MainMenu.Items)
+        foreach (var item in Menu.Items)
             if ((item as MenuItem)!.Header?.ToString() == "Lock Window")
             {
                 (item as MenuItem)!.IsChecked = true;
@@ -23,22 +23,21 @@ public partial class TitleBar : UserControl
             }
     }
 
-    private void MainMenuButton_Checked(object sender, RoutedEventArgs e)
+    private void MenuButton_Checked(object sender, RoutedEventArgs e)
     {
-        MainMenu.PlacementTarget = MainMenuButton;
-        MainMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
-        MainMenu.IsOpen = true;
-        MainMenu.HorizontalOffset = MainMenu.ActualWidth - MainMenuButton.ActualWidth;
+        Menu.PlacementTarget = this;
+        Menu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
+        Menu.IsOpen = true;
     }
     
-    private void MainMenuButton_Unchecked(object sender, RoutedEventArgs e)
+    private void MenuButton_Unchecked(object sender, RoutedEventArgs e)
     {
-        MainMenu.IsOpen = false;
+        Menu.IsOpen = false;
     }
     
-    private void MainMenu_Closed(object sender, RoutedEventArgs e)
+    private void Menu_Closed(object sender, RoutedEventArgs e)
     {
-        MainMenuButton.IsChecked = false;
+        MenuButton.IsChecked = false;
     }
 
     private void RefreshMenuItem_Click(object sender, RoutedEventArgs e)

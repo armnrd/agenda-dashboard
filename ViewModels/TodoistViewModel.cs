@@ -3,6 +3,7 @@ using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
+using System.Windows.Threading;
 using AgendaDashboard.Utilities;
 using YamlDotNet.RepresentationModel;
 
@@ -42,15 +43,8 @@ public class TodoistViewModel : INotifyPropertyChanged
         timer.Elapsed += (_, _) => { Refresh(); };
         timer.Start();
 
-        // Set a timer to wait for App.NotifMgr to become available and immediately call Refresh()
-        var initTimer = new System.Timers.Timer(500);
-        initTimer.Elapsed += (_, _) =>
-        {
-            if (App.Current.NotifMgr == null) return;
-            initTimer.Stop();
-            Refresh();
-        };
-        initTimer.Start();
+        // Do initial refresh once the app is idle
+        App.Current.Dispatcher.InvokeAsync(Refresh, DispatcherPriority.ApplicationIdle);
     }
 
     private async Task LoadTodoistTasksAsync()

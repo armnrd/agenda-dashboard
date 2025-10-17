@@ -28,6 +28,8 @@ public class CalendarViewModel : INotifyPropertyChanged
     private CalendarService _serviceGcal = new();
     private HttpClient _clientCardDav = new();
     private string _urlCardDav = "";
+    private readonly List<string> _allDayEventLines = [];
+    private readonly List<string> _cardDavEventLines = [];
 
     public CalendarViewModel()
     {
@@ -69,7 +71,8 @@ public class CalendarViewModel : INotifyPropertyChanged
     {
         // Get CardDAV settings from ConfigMgr
         var configCardDav = App.Current.ConfigMgr.Config["carddav"];
-        var refreshIntervalCardDav = double.Parse((configCardDav["refresh interval"] as YamlScalarNode)!.Value!); // TODO: error handling
+        var refreshIntervalCardDav =
+            double.Parse((configCardDav["refresh interval"] as YamlScalarNode)!.Value!); // TODO: error handling
         _urlCardDav = ((YamlScalarNode)configCardDav["url"]).Value!;
 
         // Set up CardDAV client
@@ -83,7 +86,8 @@ public class CalendarViewModel : INotifyPropertyChanged
 
         // Get Google Calendar settings from ConfigMgr
         var configGcal = App.Current.ConfigMgr.Config["google calendar"];
-        var refreshIntervalGCal = double.Parse((configGcal["refresh interval"] as YamlScalarNode)!.Value!); // TODO: error handling
+        var refreshIntervalGCal =
+            double.Parse((configGcal["refresh interval"] as YamlScalarNode)!.Value!); // TODO: error handling
         _selectedIds = ((YamlSequenceNode)configGcal["selected ids"]).Children
             .OfType<YamlScalarNode>()
             .Select(node => node.Value);
@@ -128,22 +132,28 @@ public class CalendarViewModel : INotifyPropertyChanged
         };
         timerCardDav.Start();
 
-        // Wait for App.NotifMgr to become available and immediately load data
-        var initTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
-        initTimer.Tick += (_, _) =>
-        {
-            if (App.Current.NotifMgr == null) return;
-            initTimer.Stop();
-            Refresh();
-        };
-        initTimer.Start();
+        // Do initial refresh once the app is idle - InvokeAsync not necessary here, already forked from caller
+        App.Current.Dispatcher.Invoke(Refresh, DispatcherPriority.ApplicationIdle);
+    }
+
+    // Must be called from the GUI disptacher!
+    private void UpdateDateLines()
+    {
+        // Create a new date lines list and insert the target date as the first line
+        var dateLinesNew = new List<string> { $"{_targetDate:D}" };
+
+        dateLinesNew.AddRange(_allDayEventLines);
+        dateLinesNew.AddRange(_cardDavEventLines);
+
+        DateLines = dateLinesNew;
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DateLines)));
     }
 
     private async Task LoadGcalEventsAsync()
     {
         var calendarList = await _serviceGcal.CalendarList.List().ExecuteAsync();
         var gcalEventsNew = new List<GcalEvent>();
-        var dateLinesAdd = new List<string>();
+        _allDayEventLines.Clear();
 
         foreach (var calendar in calendarList.Items)
         {
@@ -169,7 +179,7 @@ public class CalendarViewModel : INotifyPropertyChanged
             {
                 if (ev.Start.DateTime == null || ev.End.DateTime == null) // All-day event
                 {
-                    dateLinesAdd.Add($"All Day: {ev.Summary}");
+                    _allDayEventLines.Add($"All Day: {ev.Summary}");
                     continue;
                 }
 
@@ -189,9 +199,7 @@ public class CalendarViewModel : INotifyPropertyChanged
         {
             GcalEvents = gcalEventsNew;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(GcalEvents)));
-            DateLines.RemoveAll(line => line.StartsWith("All Day: "));
-            DateLines.AddRange(dateLinesAdd);
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DateLines)));
+            UpdateDateLines();
         });
     }
 
@@ -225,12 +233,7 @@ public class CalendarViewModel : INotifyPropertyChanged
         var tr = new StringReader(vCardStrsCombined);
         var vCards = SimpleDeserializer.Default.Deserialize(tr); // Parse vCard string
 
-        // Create a new date lines list and insert the target date as the first line
-        var dateLinesNew = new List<string> { $"{_targetDate:D}" };
-
-        // Add in all-day events from old DateLines
-        dateLinesNew.AddRange(DateLines.Where(line => line.StartsWith("All Day: ")));
-
+        _cardDavEventLines.Clear();
         foreach (var vCardComponent in vCards)
         {
             var vCard = (vCardComponent as VCard)!; // TODO: error handling
@@ -240,17 +243,13 @@ public class CalendarViewModel : INotifyPropertyChanged
             // Check if birthdate in vCard matches TargetDate
             if (bd.Month == _targetDate.Month && bd.Day == _targetDate.Day)
             {
-                dateLinesNew.Add(
+                _cardDavEventLines.Add(
                     $"{vCard.FormattedName}'s {YearDiffToOrdinal(bd, _targetDate)} birthday: {bd.ToShortDateString()}");
             }
         }
 
         // Replace model and notify property change - InvokeAsync not necessary, quick operations
-        App.Current.Dispatcher.Invoke(() =>
-        {
-            DateLines = dateLinesNew;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DateLines)));
-        });
+        App.Current.Dispatcher.Invoke(UpdateDateLines);
     }
 
     private static string YearDiffToOrdinal(DateTime start, DateTime end)
