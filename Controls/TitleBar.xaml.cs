@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Shell;
 
 namespace AgendaDashboard.Controls;
@@ -23,21 +24,24 @@ public partial class TitleBar : UserControl
             }
     }
 
-    private void MenuButton_Checked(object sender, RoutedEventArgs e)
+    private void ToggleButton_Checked(object sender, RoutedEventArgs e)
     {
-        Menu.PlacementTarget = this;
-        Menu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
-        Menu.IsOpen = true;
+        var button = sender as ToggleButton;
+        var menu = button.ContextMenu;
+        menu.PlacementTarget = button;
+        menu.Placement = PlacementMode.Bottom; // Needs to be set here - doesn't work in XAML
+        menu.IsOpen = true;
     }
     
-    private void MenuButton_Unchecked(object sender, RoutedEventArgs e)
+    private void ToggleButton_Unchecked(object sender, RoutedEventArgs e)
     {
         Menu.IsOpen = false;
     }
     
     private void Menu_Closed(object sender, RoutedEventArgs e)
     {
-        MenuButton.IsChecked = false;
+        var button = sender as ToggleButton;
+        button.IsChecked = false;
     }
 
     private void RefreshMenuItem_Click(object sender, RoutedEventArgs e)

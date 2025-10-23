@@ -7,7 +7,8 @@
         xmlns:controls="clr-namespace:AgendaDashboard.Controls"
         mc:Ignorable="d"
         Title="Agenda Dashboard"
-        Width="416" Height="832"
+        Width="416"
+        Height="832"
         ShowActivated="False"
         WindowStyle="None">
     <Grid>
