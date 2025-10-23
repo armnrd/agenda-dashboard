@@ -16,31 +16,27 @@ public partial class TitleBar : UserControl
     private void TitleBar_Loaded(object sender, RoutedEventArgs e)
     {
         // Lock the window by default; do this by checking the "Lock Window" menu item
-        foreach (var item in Menu.Items)
-            if ((item as MenuItem)!.Header?.ToString() == "Lock Window")
-            {
-                (item as MenuItem)!.IsChecked = true;
-                break;
-            }
+        LockMenuItem.IsChecked = true;
     }
 
-    private void ToggleButton_Checked(object sender, RoutedEventArgs e)
+    private void MenuButton_Checked(object sender, RoutedEventArgs e)
     {
-        var button = sender as ToggleButton;
+        if (sender is not ToggleButton button) return;
         var menu = button.ContextMenu;
         menu.PlacementTarget = button;
         menu.Placement = PlacementMode.Bottom; // Needs to be set here - doesn't work in XAML
         menu.IsOpen = true;
     }
     
-    private void ToggleButton_Unchecked(object sender, RoutedEventArgs e)
+    private void MenuButton_Unchecked(object sender, RoutedEventArgs e)
     {
-        Menu.IsOpen = false;
+        if (sender is not ToggleButton button) return;
+        button.ContextMenu.IsOpen = false;
     }
     
     private void Menu_Closed(object sender, RoutedEventArgs e)
     {
-        var button = sender as ToggleButton;
+        if (sender is not ToggleButton button) return;
         button.IsChecked = false;
     }
 

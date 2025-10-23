@@ -9,14 +9,13 @@
         <ToggleButton Width="32" DockPanel.Dock="Left"
                       Content="&#x2630;"
                       ToolTip="Menu"
-                      Checked="ToggleButton_Checked"
-                      Unchecked="ToggleButton_Unchecked">
+                      Checked="MenuButton_Checked"
+                      Unchecked="MenuButton_Unchecked">
             <ToggleButton.ContextMenu>
-                <ContextMenu x:Name="Menu"
-                             Closed="Menu_Closed">
+                <ContextMenu Closed="Menu_Closed">
                     <MenuItem Header="Refresh"
                               Click="RefreshMenuItem_Click" />
-                    <MenuItem Header="Lock Window" IsCheckable="True" Checked="LockMenuItem_Checked"
+                    <MenuItem x:Name="LockMenuItem" Header="Lock Window" IsCheckable="True" Checked="LockMenuItem_Checked"
                               Unchecked="LockMenuItem_Unchecked" />
                     <MenuItem Header="Exit"
                               Click="ExitMenuItem_Click" />
