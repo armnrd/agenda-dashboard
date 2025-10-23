@@ -22,7 +22,7 @@ public partial class TitleBar : UserControl
     private void MenuButton_Checked(object sender, RoutedEventArgs e)
     {
         if (sender is not ToggleButton button) return;
-        var menu = button.ContextMenu;
+        var menu = button.ContextMenu!;
         menu.PlacementTarget = button;
         menu.Placement = PlacementMode.Bottom; // Needs to be set here - doesn't work in XAML
         menu.IsOpen = true;
@@ -31,7 +31,7 @@ public partial class TitleBar : UserControl
     private void MenuButton_Unchecked(object sender, RoutedEventArgs e)
     {
         if (sender is not ToggleButton button) return;
-        button.ContextMenu.IsOpen = false;
+        button.ContextMenu!.IsOpen = false;
     }
     
     private void Menu_Closed(object sender, RoutedEventArgs e)
