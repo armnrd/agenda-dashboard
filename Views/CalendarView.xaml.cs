@@ -11,6 +11,7 @@ public partial class CalendarView : UserControl
     public const double LeftMargin = 4;
     public const double RightMargin = 10;
     public const double DateLabelOffset = 40;
+    public const double EventCardMinHeight = 50;
     public const double EventCardsRightOffset = 46; // Offset matches end of date line
     public static readonly Thickness DateLinesMargin = new(DateLabelOffset, 0, 27, 0);
     // Right margin matches end of date line

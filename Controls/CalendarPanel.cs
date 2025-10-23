@@ -108,6 +108,7 @@ public class CalendarPanel : Panel
         {
             var top = ((evt.Start.TimeOfDay - _dayStart).TotalMinutes / totalMinutes) * finalSize.Height;
             var height = ((evt.End - evt.Start).TotalMinutes / totalMinutes) * finalSize.Height;
+            height = double.Max(height, CalendarView.EventCardMinHeight); // Make sure events are high enough to fit the labels
             var left = columns[evt] * width + CalendarView.DateLabelOffset; // Use the offset for date labels
 
             elem.Measure(new Size(width, height));

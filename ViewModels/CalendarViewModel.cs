@@ -166,8 +166,8 @@ public class CalendarViewModel : INotifyPropertyChanged
 
             // Define parameters of request
             var request = _serviceGcal.Events.List(calendar.Id);
-            request.TimeMin = _targetDate;
-            request.TimeMax = _targetDate.AddDays(1);
+            request.TimeMinDateTimeOffset = _targetDate;
+            request.TimeMaxDateTimeOffset = _targetDate.AddDays(1);
             request.ShowDeleted = false;
             request.SingleEvents = true;
             request.OrderBy = EventsResource.ListRequest.OrderByEnum.StartTime;
@@ -177,7 +177,7 @@ public class CalendarViewModel : INotifyPropertyChanged
 
             foreach (var ev in events.Items)
             {
-                if (ev.Start.DateTime == null || ev.End.DateTime == null) // All-day event
+                if (ev.Start.DateTimeDateTimeOffset == null || ev.End.DateTimeDateTimeOffset == null) // All-day event
                 {
                     _allDayEventLines.Add($"All Day: {ev.Summary}");
                     continue;
@@ -186,8 +186,8 @@ public class CalendarViewModel : INotifyPropertyChanged
                 gcalEventsNew.Add(new GcalEvent
                 {
                     Title = ev.Summary,
-                    Start = ev.Start.DateTime.Value,
-                    End = ev.End.DateTime.Value,
+                    Start = ev.Start.DateTimeDateTimeOffset.Value.LocalDateTime,
+                    End = ev.End.DateTimeDateTimeOffset.Value.LocalDateTime,
                     CalendarName = calendar.Summary,
                     CalendarColor = brush
                 });
